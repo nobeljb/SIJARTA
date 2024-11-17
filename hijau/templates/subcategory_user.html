@@ -1,0 +1,36 @@
+{% block content %}
+<div class="container">
+    <h1>{{ subcategory.name }}</h1>
+    <p>Kategori: {{ category_name }}</p>
+    <p>{{ subcategory.description }}</p>
+
+    <h2>Pilihan Sesi Layanan</h2>
+    <ul>
+        {% for session in sessions %}
+            <li>{{ session.name }} - Rp {{ session.price }}
+                <button onclick="alert('Pemesanan sesi: {{ session.name }}')">Pesan</button>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Daftar Pekerja</h2>
+    <ul>
+        {% for worker in workers %}
+            <li>
+                <!-- Worker Name as a Link to the worker detail page -->
+                <a href="{% url 'worker_detail' worker.id %}" class="worker-name text-blue-600">
+                   {{ worker.name }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Testimoni</h2>
+    <ul>
+        {% for testimonial in testimonials %}
+            <li><strong>{{ testimonial.user_name }}</strong> ({{ testimonial.date }}): "{{ testimonial.text }}"<br>
+            Pekerja: {{ testimonial.worker_name }} | Rating: {{ testimonial.rating }}/5</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
