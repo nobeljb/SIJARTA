@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Pekerja</title>
+</head>
+<body>
+    <h1>Register Pekerja</h1>
+
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="nama">Nama:</label>
+        <input type="text" id="nama" name="nama" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <label for="jenis_kelamin">Jenis Kelamin:</label>
+        <input type="text" id="jenis_kelamin" name="jenis_kelamin" required><br><br>
+
+        <label for="nohp">No HP:</label>
+        <input type="text" id="nohp" name="nohp" required><br><br>
+
+        <label for="tanggal_lahir">Tanggal Lahir:</label>
+        <input type="date" id="tanggal_lahir" name="tanggal_lahir" required><br><br>
+
+        <label for="alamat">Alamat:</label>
+        <input type="text" id="alamat" name="alamat" required><br><br>
+
+        <label for="nama_bank">Nama Bank:</label>
+        <select id="nama_bank" name="nama_bank" required>
+            {% for bank in bank_list %}
+                <option value="{{ bank }}">{{ bank }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="rekening">No Rekening:</label>
+        <input type="text" id="rekening" name="rekening" required><br><br>
+
+        <label for="npwp">NPWP:</label>
+        <input type="text" id="npwp" name="npwp" required><br><br>
+
+        <label for="foto">Upload Foto:</label>
+        <input type="file" id="foto" name="foto"><br><br>
+
+        <button type="submit">Daftar</button>
+    </form>
+</body>
+</html>
