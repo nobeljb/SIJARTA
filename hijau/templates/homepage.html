@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+{% include 'navbar_guest.html' %}
+{% endblock navbar %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto p-6 bg-white rounded-lg shadow-lg max-w-6xl">
+        <h1 class="text-3xl font-bold text-center mb-6">Daftar Kategori Jasa</h1>
+
+        <!-- Filter Dropdown Kategori -->
+        <div class="mb-6">
+            <label for="category-dropdown" class="text-lg font-medium block mb-2">Pilih Kategori:</label>
+            <select id="category-dropdown" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Pilih Kategori</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Search Bar for Subcategories -->
+        <div class="mb-6">
+            <label for="subcategory-search" class="text-lg font-medium block mb-2">Cari Subkategori:</label>
+            <input type="text" id="subcategory-search" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Cari subkategori...">
+        </div>
+
+        <!-- Search Button -->
+        <div class="mb-6 text-center">
+            <button id="search-button" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200">Cari</button>
+        </div>
+
+        <!-- Daftar Subkategori per Kategori -->
+        <div id="subcategory-list">
+            {% for category in categories %}
+                <div id="category-{{ category.id }}" class="subcategory-category mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">{{ category.name }}</h2>
+                    <ul>
+                        {% for subcategory in subcategories %}
+                            {% if subcategory.category_id == category.id %}
+                                <li class="subcategory-item mb-4">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex space-x-4">
+                                            <!-- Tautan untuk pengguna biasa -->
+                                            <a href="{% url 'subcategory_detail_user' category.id subcategory.name %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                                [User] {{ subcategory.name }} - {{ subcategory.description }}
+                                            </a>
+                                        </div>
+                                        <div class="flex space-x-4">
+                                            <!-- Tautan untuk pekerja -->
+                                            <a href="{% url 'subcategory_detail_worker' category.id subcategory.name %}" class="text-green-600 hover:text-green-800 font-medium">
+                                                [Worker] {{ subcategory.name }} - {{ subcategory.description }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Menangani filter kategori
+    document.getElementById('category-dropdown').addEventListener('change', function() {
+        var selectedCategory = this.value;
+        var subcategoryList = document.getElementById('subcategory-list');
+        
+        // Menyembunyikan semua subkategori terlebih dahulu
+        var subcategorySections = subcategoryList.querySelectorAll('.subcategory-category');
+        subcategorySections.forEach(function(section) {
+            section.style.display = 'none';
+        });
+        
+        // Menampilkan subkategori sesuai kategori yang dipilih
+        if (selectedCategory) {
+            var selectedCategoryElement = document.getElementById('category-' + selectedCategory);
+            selectedCategoryElement.style.display = 'block';
+        } else {
+            // Tampilkan semua subkategori jika tidak ada kategori yang dipilih
+            subcategorySections.forEach(function(section) {
+                section.style.display = 'block';
+            });
+        }
+    });
+
+    // Menangani pencarian subkategori berdasarkan tombol klik
+    document.getElementById('search-button').addEventListener('click', function() {
+        var searchTerm = document.getElementById('subcategory-search').value.toLowerCase();
+        var subcategorySections = document.querySelectorAll('.subcategory-category');
+        
+        subcategorySections.forEach(function(section) {
+            var categoryTitle = section.querySelector('.category-title');
+            var subcategoryItems = section.querySelectorAll('.subcategory-item');
+            var categoryHasVisibleSubcategory = false;
+
+            subcategoryItems.forEach(function(item) {
+                var subcategoryName = item.querySelector('a').textContent.toLowerCase();
+                if (subcategoryName.includes(searchTerm)) {
+                    item.style.display = 'block';
+                    categoryHasVisibleSubcategory = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Tampilkan atau sembunyikan kategori berdasarkan apakah ada subkategori yang cocok
+            if (categoryHasVisibleSubcategory) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

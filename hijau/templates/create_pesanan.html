@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-6 bg-white rounded-lg shadow-lg mt-8 max-w-xl">
+    <h2 class="text-3xl font-semibold text-gray-800 mb-6 text-center">Formulir Pemesanan Jasa</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Tanggal Pemesanan -->
+        <div>
+            <label for="id_tanggal_pemesanan" class="text-lg font-medium block mb-2">Tanggal Pemesanan</label>
+            <div class="relative">
+                {{ form.tanggal_pemesanan }}
+            </div>
+        </div>
+
+
+        <!-- Kode Diskon -->
+        <div class="mb-6">
+            <label for="id_diskon" class="text-lg font-medium block mb-2">Kode Promo</label>
+            <div class="relative">
+                {{ form.diskon }}
+            </div>
+        </div>
+
+        <!-- Total Pembayaran -->
+        <div class="mb-6">
+            <label for="id_total_pembayaran" class="text-lg font-medium block mb-2">Total Pembayaran</label>
+            <div class="relative">
+                {{ form.total_pembayaran }}
+            </div>
+        </div>
+
+        <!-- Metode Pembayaran -->
+        <div class="mb-6">
+            <label for="id_metode_bayar" class="text-lg font-medium block mb-2">Metode Pembayaran</label>
+            <div class="relative">
+                {{ form.metode_bayar }}
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-8 text-center">
+            <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition duration-200">
+                Submit
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
