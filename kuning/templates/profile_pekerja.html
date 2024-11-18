@@ -1,0 +1,120 @@
+<!-- templates/kuning/show_profile.html -->
+{% extends 'base.html' %}
+
+{% block navbar %}
+   {% include 'navbar_pekerja.html' %}
+{% endblock navbar %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; padding: 40px 20px;">
+   <div style="width: 100%; max-width: 600px; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+       <h1 style="text-align: center; color: #2F4F4F; margin-bottom: 20px;">Profil Pekerja</h1>
+
+       <div style="display: flex; flex-direction: column; gap: 15px;">
+           <!-- Informasi Profil -->
+           <div style="border: 1px solid #ddd; border-radius: 4px; padding: 20px;">
+               <div style="display: flex;">
+                   <!-- Kolom Kiri - Informasi -->
+                   <div style="flex: 1;">
+                       <!-- Nama -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Nama</div>
+                           <div>: {{ nama }}</div>
+                       </div>
+
+                       <!-- Level -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Level</div>
+                           <div>: Level {{ Level }}</div>
+                       </div>
+
+                       <!-- Jenis Kelamin -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Jenis Kelamin</div>
+                           <div>: {{ jenis_kelamin }}</div>
+                       </div>
+
+                       <!-- No HP -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">No HP</div>
+                           <div>: {{ nohp }}</div>
+                       </div>
+
+                       <!-- Tanggal Lahir -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Tanggal Lahir</div>
+                           <div>: {{ tanggal_lahir }}</div>
+                       </div>
+
+                       <!-- Alamat -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Alamat</div>
+                           <div>: {{ alamat }}</div>
+                       </div>
+
+                       <!-- Saldo -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Saldo MyPay</div>
+                           <div>: Rp {{ saldo }}</div>
+                       </div>
+
+                       <!-- Nama Bank -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Nama Bank</div>
+                           <div>: {{ nama_bank }}</div>
+                       </div>
+
+                       <!-- No Rekening -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">No Rekening</div>
+                           <div>: {{ rekening }}</div>
+                       </div>
+
+                       <!-- NPWP -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">NPWP</div>
+                           <div>: {{ npwp }}</div>
+                       </div>
+
+                       <!-- Rating -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Rating</div>
+                           <div>: {{ rating }}</div>
+                       </div>
+
+                       <!-- Jumlah Pesanan -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Jumlah Pesanan Selesai</div>
+                           <div>: {{ jumlah_pesanan }}</div>
+                       </div>
+
+                       <!-- Kategori Pekerjaan -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Kategori Pekerjaan</div>
+                           <div>: {{ kategori_pekerjaan }}</div>
+                       </div>
+                   </div>
+
+                   <!-- Kolom Kanan - Foto -->
+                   <div style="margin-left: 20px;">
+                       <div style="width: 150px; height: 150px; border: 1px solid #ddd; border-radius: 4px; display: flex; justify-content: center; align-items: center;">
+                           Foto
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+           <!-- Tombol Update dan Logout -->
+           <div style="display: flex; gap: 10px; justify-content: center;">
+               <button type="button" style="background-color: #2F4F4F; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+                   Update
+               </button>
+               <a href="{% url 'kuning:logout' %}" 
+                  style="background-color: #2F4F4F; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
+                   Logout
+               </a>
+           </div>
+       </div>
+   </div>
+</div>
+{% endblock content %}

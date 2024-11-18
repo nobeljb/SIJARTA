@@ -1,4 +1,4 @@
-<!-- templates/kuning/register_pekerja.html -->
+<!-- templates/kuning/register_pengguna.html -->
 {% extends 'base.html' %}
 
 {% block navbar %}
@@ -8,7 +8,7 @@
 {% block content %}
 <div style="display: flex; justify-content: center; padding: 40px 20px;">
     <div style="width: 100%; max-width: 500px; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
-        <h1 style="text-align: center; color: #2F4F4F; margin-bottom: 20px;">Register Pekerja</h1>
+        <h1 style="text-align: center; color: #2F4F4F; margin-bottom: 20px;">Register Pengguna</h1>
 
         {% if error_message %}
             <p style="color: red;">{{ error_message }}</p>
@@ -52,34 +52,6 @@
             <div>
                 <label for="alamat">Alamat:</label><br>
                 <input type="text" id="alamat" name="alamat" required 
-                       style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-
-            <div>
-                <label for="nama_bank">Nama Bank:</label><br>
-                <select id="nama_bank" name="nama_bank" required 
-                        style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                    {% for bank in bank_list %}
-                        <option value="{{ bank }}">{{ bank }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div>
-                <label for="rekening">No Rekening:</label><br>
-                <input type="text" id="rekening" name="rekening" required 
-                       style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-
-            <div>
-                <label for="npwp">NPWP:</label><br>
-                <input type="text" id="npwp" name="npwp" required 
-                       style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-
-            <div>
-                <label for="foto">Upload Foto:</label><br>
-                <input type="text" id="foto" name="foto" 
                        style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
 
