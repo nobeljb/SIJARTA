@@ -20,9 +20,9 @@
                 <div class="text-black">Saldo:</div>
                 <div class="font-semibold text-primary">Rp {{ balance|default:"0" }}</div>
             </div>
-            <button class="btn btn-primary">
+            <a href="{% url 'mypay:transaksi_mypay' %}" class="btn btn-primary">
                 Lakukan Transaksi
-            </button>
+            </a>
         </div>
 
         <!-- Transaction History -->

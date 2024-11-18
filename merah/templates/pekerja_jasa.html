@@ -1,0 +1,96 @@
+<!-- pekerja_jasa.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-2xl font-semibold text-primary text-center mb-8">Pekerjaan Jasa Tersedia</h1>
+
+        <!-- Filters -->
+        <div class="grid grid-cols-2 gap-6 mb-8">
+            <div>
+                <label for="kategori" class="block text-teks mb-2 font-medium">Kategori Jasa:</label>
+                <select id="kategori" class="w-full rounded-md border-secondary focus:border-primary focus:ring-2 focus:ring-primary-light">
+                    <option value="">Semua Kategori</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if category == worker_category %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="subkategori" class="block text-teks mb-2 font-medium">Subkategori Jasa:</label>
+                <select id="subkategori" class="w-full rounded-md border-secondary focus:border-primary focus:ring-2 focus:ring-primary-light">
+                    <option value="">Semua Subkategori</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Job List -->
+        <div class="space-y-6">
+            {% for job in jobs %}
+                {% if job.category in worker_category %}
+                    <div class="card border border-secondary p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-primary">{{ job.kategori }} - {{ job.subkategori }}</h3>
+                                <p class="text-teks">{{ job.alamat }}</p>
+                            </div>
+                            <span class="bg-accent text-white px-3 py-1 rounded-full text-sm">{{ job.status }}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <p class="text-teks">Tanggal:</p>
+                                <p class="font-medium">{{ job.tanggal }}</p>
+                            </div>
+                            <div>
+                                <p class="text-teks">Waktu:</p>
+                                <p class="font-medium">{{ job.waktu }}</p>
+                            </div>
+                            <div>
+                                <p class="text-teks">Harga:</p>
+                                <p class="font-medium">{{ job.harga }}</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-full" onclick="takeJob({{ job.id }})">Kerjakan Pesanan</button>
+                    </div>
+                {% endif %}
+            {% empty %}
+            <div class="text-center text-teks p-8">
+                Tidak ada pesanan jasa yang tersedia saat ini.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const kategoriSelect = document.getElementById('kategori');
+    const subkategoriSelect = document.getElementById('subkategori');
+    const subcategories = {{ subcategories|safe }};
+    
+    kategoriSelect.addEventListener('change', function() {
+        const selectedCategory = this.value;
+        subkategoriSelect.innerHTML = '<option value="">Semua Subkategori</option>';
+        
+        if (selectedCategory && subcategories[selectedCategory]) {
+            subcategories[selectedCategory].forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                subkategoriSelect.appendChild(option);
+            });
+        }
+    });
+});
+
+function takeJob(jobId) {
+    if (confirm('Apakah Anda yakin ingin mengambil pekerjaan ini?')) {
+        alert('Pesanan berhasil diambil!');
+    }
+}
+</script>
+{% endblock %}
