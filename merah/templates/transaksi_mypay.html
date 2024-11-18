@@ -2,6 +2,14 @@
 
 {% extends 'base.html' %}
 
+{% block navbar %}
+    {% if user_role == 'Pekerja' %}
+        {% include 'navbar_pekerja.html' %}
+    {% else %}
+        {% include 'navbar_pengguna.html' %}
+    {% endif %}
+{% endblock navbar %}
+
 {% block content %}
 <div class="container mx-auto px-4 py-8 max-w-2xl">
     <!-- White background card -->

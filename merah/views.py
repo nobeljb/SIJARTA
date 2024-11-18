@@ -8,7 +8,7 @@ from decimal import Decimal
 DUMMY_USER = {
     'phone_number': '081234567890',
     'balance': Decimal('1500000.00'),
-    'role': 'Pelajar',
+    'role': 'Pengguna',
 }
 
 DUMMY_TRANSACTIONS = [

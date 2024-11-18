@@ -38,9 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'merah',
-    'hijau',
     'kuning',
-    'biru',
     'landing_page',
 ]
 
