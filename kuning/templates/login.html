@@ -1,26 +1,42 @@
-<body>
-    <h1>Login</h1>
-    
-    {% if messages %}
-        <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
+<!-- templates/kuning/login.html -->
+{% extends 'base.html' %}
 
-    <form method="POST" action="{% url 'kuning:login' %}">
-        {% csrf_token %}
+{% block navbar %}
+    {% include 'navbar_guest.html' %}
+{% endblock navbar %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+    <div style="width: 100%; max-width: 400px; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+        <h2 style="text-align: center; color: #2F4F4F; margin-bottom: 20px;">Login</h2>
+
+        <form method="POST" action="{% url 'kuning:login' %}" style="display: flex; flex-direction: column; gap: 15px;">
+            {% csrf_token %}
+            
+            <div>
+                <label for="nohp">Nomor HP:</label><br>
+                <input type="text" id="nohp" name="nohp" required 
+                       style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            
+            <div>
+                <label for="password">Password:</label><br>
+                <input type="password" id="password" name="password" required 
+                       style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            
+            <button type="submit" 
+                    style="background-color: #2F4F4F; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                Login
+            </button>
+        </form>
         
-        <label for="nohp">Nomor HP:</label><br>
-        <input type="text" id="nohp" name="nohp" required><br><br>
-        
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-        
-        <input type="submit" value="Login">
-    </form>
-    
-    <br>
-    <p>Belum punya akun? <a href="{% url 'kuning:choose_role' %}">Daftar di sini</a></p>
-</body>
+        <p style="text-align: center; margin-top: 15px;">
+            Belum punya akun? 
+            <a href="{% url 'kuning:choose_role' %}" style="color: #2F4F4F; text-decoration: none;">
+                Daftar di sini
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock content %}

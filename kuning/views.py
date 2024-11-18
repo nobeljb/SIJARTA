@@ -28,15 +28,20 @@ pengguna = [
         'npwp': '345567',
         'foto': 'ini foto',
         'alamat': 'Jalan in aja dulu',
-        'saldo': '22222'
+        'saldo': '22222',
+        'rating': '5',
+        'jumlah_pesanan': '1',
+        'kategori_pekerjaan': 'Kategori Jasa 1'
     }
 ]
 
 penggunalogin = {}
 
 def show_profile(request):
-    
-    return render(request, "show_profile.html", penggunalogin)
+    global penggunalogin
+    if(penggunalogin['role'] == 'pengguna'):
+        return render(request, "profile_pengguna.html", penggunalogin)
+    return render(request, "profile_pekerja.html", penggunalogin)
 
 def choose_role(request):
     return render(request, "choose_role.html")
@@ -89,17 +94,49 @@ def register_pekerja(request):
     bank_list = ['GoPay', 'OVO', 'Virtual Account BCA', 'Virtual Account BNI', 'Virtual Account Mandiri']
     return render(request, 'register_pekerja.html', {'bank_list': bank_list})
 
+def register_pengguna(request):
+    if request.method == 'POST':
+        nohp = request.POST.get('nohp')
+
+        # Validasi No HP harus unik
+        for user in pengguna:
+            if user['nohp'] == nohp:
+                return render(request, 'register_pengguna.html', {
+                    'error_message': 'Nomor HP sudah terdaftar. Silakan login.'
+                })
+
+        # Jika validasi lolos, tambahkan data ke pengguna
+        data = {
+            'role': 'pengguna',
+            'nama': request.POST.get('nama'),
+            'password': request.POST.get('password'),
+            'jenis_kelamin': request.POST.get('role'),  # sesuai dengan name di radio button
+            'nohp': nohp,
+            'tanggal_lahir': request.POST.get('tanggal_lahir'),
+            'alamat': request.POST.get('alamat'),
+            'saldo': '0'  # Saldo awal
+        }
+        pengguna.append(data)
+
+        return render(request, 'success.html', {'message': 'Pendaftaran berhasil.'})
+
+    return render(request, 'register_pengguna.html')
+
 def login(request):
     if request.method == 'POST':
         nohp = request.POST.get('nohp')
         password = request.POST.get('password')
+
+        global penggunalogin
+        penggunalogin = {}
         
         # Cek kredensial
         for user in pengguna:
             if user['nohp'] == nohp and user['password'] == password:
                 # Simpan data pengguna yang login ke penggunalogin
-                global penggunalogin
+                
                 penggunalogin = user
+                print(penggunalogin)
                 
                 messages.success(request, f"Selamat datang, {user['nama']}!")
                 return redirect('kuning:show_profile')  # Redirect ke halaman profile
