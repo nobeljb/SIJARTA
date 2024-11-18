@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from datetime import date
+from datetime import datetime, timedelta
 from django.http import Http404, HttpResponse
 from django import forms
 
@@ -26,7 +26,7 @@ def testimoni_form(request):
         # Add the new testimony to the list
         testimonies.append({
             "user_name": user_name,
-            "date": date.today().strftime("%Y-%m-%d"),
+            "date": datetime.today().strftime("%Y-%m-%d"),
             "testimony_text": comment,
             "worker_name": worker_name,
             "rating": rating
@@ -58,6 +58,7 @@ def diskon(request):
             "discount": "20%",
             "min_transaction": "Rp 5000",
             "remaining_days": 10,
+            "end_date": "28 November 2024",
             "quota": 30,
             "price": 50
         }
