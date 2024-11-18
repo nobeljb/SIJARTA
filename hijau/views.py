@@ -3,6 +3,10 @@ from django.http import Http404, HttpResponse
 from datetime import datetime
 from django import forms
 
+DUMMY_USER = {
+    'role': 'Pengguna',
+}
+
 def homepage(request):
     categories = [
         {"id": 1, "name": "Kategori Jasa 1"},
@@ -19,7 +23,7 @@ def homepage(request):
         {"category_id": 3, "category_name": "Kategori Jasa 3", "name": "Subkategori Jasa 3.2", "description": "Deskripsi subkategori 3.2"},
     ]
 
-    return render(request, 'homepage.html', {'categories': categories, 'subcategories': subcategories})
+    return render(request, 'homepage.html', {'categories': categories, 'subcategories': subcategories, 'user_role': DUMMY_USER['role']})
 
 
 from django.shortcuts import render
@@ -84,7 +88,8 @@ def subcategory_detail_user(request, category_id, subcategory_name):
         'sessions': sessions,
         'testimonials': testimonials,
         'workers': workers,
-        'worker_statuses': worker_statuses
+        'worker_statuses': worker_statuses,
+        'user_role': DUMMY_USER['role']
     }
 
     return render(request, 'subcategory_user.html', context)
@@ -105,7 +110,8 @@ def subcategory_detail_worker(request, category_id, subcategory_name):
         'workers': workers,
         'worker_statuses': worker_statuses,
         'sessions': sessions,
-        'testimonials': testimonials
+        'testimonials': testimonials,
+        'user_role': DUMMY_USER['role']
     }
 
     return render(request, 'subcategory_worker.html', context)
@@ -119,12 +125,12 @@ def worker_detail(request, worker_id):
     # Pass worker details to the template
     context = {
         'worker': worker,
+        'user_role': DUMMY_USER['role']
     }
 
     return render(request, 'worker_detail.html', context)
 
 # Dummy form untuk pemesanan
-from django import forms
 
 class PemesananForm(forms.Form):
     tanggal_pemesanan = forms.DateField(
@@ -188,7 +194,7 @@ def create_pemesanan(request):
     else:
         form = PemesananForm()
 
-    return render(request, 'create_pesanan.html', {'form': form})
+    return render(request, 'create_pesanan.html', {'form': form, 'user_role': DUMMY_USER['role']})
 
 
 
@@ -223,5 +229,6 @@ def view_pemesanan(request):
     
     context = {
         'pesanan': pesanan,
+        'user_role': DUMMY_USER['role']
     }
     return render(request, 'view_pemesanan.html', context)
