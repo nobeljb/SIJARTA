@@ -1,5 +1,3 @@
-<!-- status_pekerjaan.html -->
-
 {% extends 'base.html' %}
 
 {% block navbar %}
@@ -12,7 +10,7 @@
         <div class="bg-secondary w-full rounded-lg">
             <h1 class="text-xl font-semibold text-teks text-center px-2 py-2 mb-8">Status Pekerjaan</h1>
         </div>
-        <!-- Filters -->
+        <!-- Filter-->
         <form method="GET">
             <div class="grid grid-cols-2 gap-6 mb-8">
 
@@ -63,7 +61,7 @@
                             <p class="font-medium">{{ job.harga }}</p>
                         </div>
                     </div>
-                    <div class="flex space-x-4">
+                    <div class="flex justify-end space-x-4">
                         {% if job.status == "Menunggu Pekerja Berangkat" %}
                         <form method="POST">
                             {% csrf_token %}
@@ -71,13 +69,13 @@
                             <button type="submit" class="btn btn-secondary">Tiba Di Lokasi</button>
                         </form>
                         {% elif job.status == "Pekerja Tiba Di Lokasi" %}
-                        <form method="POST" action="{% url 'merah:update_status' job.id %}">
+                        <form method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="status" value="Pelayanan Jasa Sedang Dilakukan">
                             <button type="submit" class="btn btn-secondary">Melakukan Pelayanan Jasa</button>
                         </form>
                         {% elif job.status == "Pelayanan Jasa Sedang Dilakukan" %}
-                        <form method="POST" action="{% url 'merah:update_status' job.id %}">
+                        <form method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="status" value="Pesanan Selesai">
                             <button type="submit" class="btn btn-secondary">Selesai Melakukan Pelayanan</button>

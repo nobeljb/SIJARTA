@@ -8,7 +8,7 @@ from decimal import Decimal
 DUMMY_USER = {
     'phone_number': '081234567890',
     'balance': Decimal('1500000.00'),
-    'role': 'Pengguna',
+    'role': 'Pengguna', # atur rolenya disini
 }
 
 DUMMY_TRANSACTIONS = [
@@ -73,9 +73,7 @@ DUMMY_TRANSACTIONS = [
 
 DUMMY_JOB_CATEGORIES = [
     'Home Cleaning',
-    'Personal Driver',
     'Home Cook',
-    'Massage',
 ]
 
 DUMMY_SUBCATEGORIES = {
@@ -150,7 +148,27 @@ def pekerja_jasa(request):
     worker_category = ['Home Cleaning', 'Home Cook']
     
     # Filter jobs based on worker's category
-    available_jobs = [job for job in DUMMY_JOB_ORDERS if job['kategori'] in worker_category]
+    available_jobs = [
+    {
+        'id': 1,
+        'kategori': 'Home Cleaning',
+        'subkategori': 'Regular Cleaning',
+        'status': 'Mencari Pekerja Terdekat',
+        'alamat': 'Jl. Kebon Jeruk No. 15',
+        'tanggal': '2024-03-20',
+        'waktu': '09:00',
+        'harga': 'Rp 150.000',
+    },
+    {
+        'id': 2,
+        'kategori': 'Home Cleaning',
+        'subkategori': 'Regular Cleaning',
+        'status': 'Mencari Pekerja Terdekat',
+        'alamat': 'Jl. Sudirman No. 100',
+        'tanggal': '2024-03-21',
+        'waktu': '13:00',
+        'harga': 'Rp 300.000',
+    },]
     
     context = {
         'categories': DUMMY_JOB_CATEGORIES,
