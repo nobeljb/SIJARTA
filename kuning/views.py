@@ -89,3 +89,29 @@ def register_pekerja(request):
     bank_list = ['GoPay', 'OVO', 'Virtual Account BCA', 'Virtual Account BNI', 'Virtual Account Mandiri']
     return render(request, 'register_pekerja.html', {'bank_list': bank_list})
 
+def login(request):
+    if request.method == 'POST':
+        nohp = request.POST.get('nohp')
+        password = request.POST.get('password')
+        
+        # Cek kredensial
+        for user in pengguna:
+            if user['nohp'] == nohp and user['password'] == password:
+                # Simpan data pengguna yang login ke penggunalogin
+                global penggunalogin
+                penggunalogin = user
+                
+                messages.success(request, f"Selamat datang, {user['nama']}!")
+                return redirect('kuning:show_profile')  # Redirect ke halaman profile
+        
+        # Jika kredensial tidak cocok
+        messages.error(request, 'Nomor HP atau Password salah!')
+        return render(request, 'login.html')
+    
+    return render(request, 'login.html')
+
+def logout(request):
+    global penggunalogin
+    penggunalogin = {}
+    messages.success(request, 'Berhasil logout!')
+    return redirect('kuning:login')

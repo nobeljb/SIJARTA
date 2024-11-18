@@ -1,4 +1,19 @@
-<h1>LANDING PAGE</h1>
-<a href="{% url 'kuning:register'}">
-    Register
-</a>
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: Arial, sans-serif; background-color: white;">
+    <h1 style="color: #2F4F4F; margin-bottom: 40px; font-size: 28px;">SIJARTA by BasDat SigMa</h1>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; width: 300px;">
+        <a href="{% url 'kuning:login' %}" 
+           style="padding: 15px 20px; text-align: center; text-decoration: none; border-radius: 5px; width: 100%; box-sizing: border-box; font-size: 16px; background-color: #2F4F4F; color: white;">
+            Login
+        </a>
+        
+        <a href="{% url 'kuning:choose_role' %}" 
+           style="padding: 15px 20px; text-align: center; text-decoration: none; border-radius: 5px; width: 100%; box-sizing: border-box; font-size: 16px; background-color: #F5F5DC; color: #2F4F4F;">
+            Register
+        </a>
+    </div>
+</div>
+{% endblock content %}
