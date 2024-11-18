@@ -51,15 +51,15 @@ def diskon(request):
             "min_transaction": "Rp 100000",
             "remaining_days": 5,
             "quota": 50,
-            "price": "Rp 10000"
+            "price": 50000000
         },
         {
             "code": "DISCOUNT20",
-            "discount": "Rp 20000",
+            "discount": "20%",
             "min_transaction": "Rp 5000",
             "remaining_days": 10,
             "quota": 30,
-            "price": "Rp 50000"
+            "price": 50
         }
     ]
 

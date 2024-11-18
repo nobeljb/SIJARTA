@@ -43,11 +43,11 @@
                             Min Transaction: {{ voucher.min_transaction }} | Remaining: {{ voucher.remaining_days }} days
                         </p>
                         <p class="text-sm text-[#283D3B]">
-                            Quota: {{ voucher.quota }} | Price: {{ voucher.price }}
+                            Quota: {{ voucher.quota }} | Price: Rp {{ voucher.price }}
                         </p>
                     </div>
                     <button
-                        onclick="handleVoucherPurchase('{{ voucher.code }}', '{{ voucher.end_date }}', {{ voucher.quota }}, {{ voucher.price }})"
+                        onclick="handleVoucherPurchase('{{ voucher.code }}', '{{ voucher.end_date }}', '{{ voucher.quota }}', '{{ voucher.price }}')"
                         class="px-4 py-2 bg-[#00DFC9] text-[#283D3B] font-medium rounded-lg hover:bg-[#2C5F59] hover:text-white transition duration-200">
                         Buy Voucher
                     </button>
@@ -76,8 +76,7 @@
 <script>
     // Function to handle voucher purchase
     function handleVoucherPurchase(voucherCode, endDate, quota, price) {
-        // You can get the user's balance from your backend/session
-        // For now, let's simulate with a fixed balance
+        console.log("Voucher purchase triggered:", voucherCode, endDate, quota, price);
         const userBalance = 1000000; // Example balance
         
         const popup = document.getElementById('popup');
@@ -98,23 +97,10 @@
                 </p>
             `;
             
-            // Here you can add AJAX call to your backend to process the purchase
-            // fetch('/api/purchase-voucher', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         voucherCode,
-            //         endDate,
-            //         quota,
-            //         price
-            //     })
-            // });
         } else {
             title.textContent = 'GAGAL';
             message.innerHTML = `
-                <p class="text-center text-red-600">
+                <p class="text-center text-[#C44536]">
                     Maaf, saldo Anda tidak cukup untuk membeli voucher ini.
                 </p>
             `;
