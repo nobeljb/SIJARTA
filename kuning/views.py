@@ -152,3 +152,31 @@ def logout(request):
     penggunalogin = {}
     messages.success(request, 'Berhasil logout!')
     return redirect('kuning:login')
+
+def update_pekerja(request):
+    if request.method == 'POST':
+        # Di sini kita hanya redirect ke halaman profile
+        # tanpa benar-benar mengubah data
+        return redirect('kuning:show_profile')
+    
+    # Jika GET request, tampilkan form dengan data current user
+    bank_list = ['GoPay', 'OVO', 'Virtual Account BCA', 'Virtual Account BNI', 'Virtual Account Mandiri']
+    context = {
+        **penggunalogin,  # unpack data current user
+        'bank_list': bank_list
+    }
+    
+    return render(request, 'update_pekerja.html', context)
+
+def update_pengguna(request):
+    if request.method == 'POST':
+        # Di sini kita hanya redirect ke halaman profile
+        # tanpa benar-benar mengubah data
+        return redirect('kuning:show_profile')
+    
+    # Jika GET request, tampilkan form dengan data current user
+    context = {
+        **penggunalogin,  # unpack data current user
+    }
+    
+    return render(request, 'update_pengguna.html', context)
