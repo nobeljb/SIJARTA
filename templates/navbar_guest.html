@@ -1,0 +1,12 @@
+<!-- templates/navbar_guest.html -->
+<nav style="background-color: #2F4F4F; padding: 15px; color: white;">
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+        <div style="font-size: 20px; font-weight: bold;">
+            SIJARTA
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="{% url 'kuning:login' %}" style="color: white; text-decoration: none;">Login</a>
+            <a href="{% url 'kuning:choose_role' %}" style="color: white; text-decoration: none;">Register</a>
+        </div>
+    </div>
+</nav>

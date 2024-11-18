@@ -1,0 +1,70 @@
+<!-- dashboard.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-semibold text-primary">MyPay</h1>
+        <p class="text-black">Fitur ini akan menampilkan saldo MyPay user saat ini beserta button untuk melakukan transaksi.</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <!-- Balance and Transaction Button -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-4">
+                <div class="text-black">No HP:</div>
+                <div class="font-semibold text-primary">{{ phone_number }}</div>
+                <div class="text-black">Saldo:</div>
+                <div class="font-semibold text-primary">Rp {{ balance|default:"0" }}</div>
+            </div>
+            <button class="btn btn-primary">
+                Lakukan Transaksi
+            </button>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold text-primary mb-4">Riwayat Transaksi</h2>
+            <div class="border rounded-lg">
+                <!-- Table Header -->
+                <div class="grid grid-cols-3 bg-gray-50 p-4 border-b font-medium text-black">
+                    <div>Nominal</div>
+                    <div>Tanggal</div>
+                    <div>Kategori Transaksi</div>
+                </div>
+                
+                <!-- Transaction Items -->
+                {% for transaction in transactions %}
+                <div class="grid grid-cols-3 p-4 border-b hover:bg-gray-50">
+                    <div class="text-primary">Rp {{ transaction.nominal }}</div>
+                    <div class="text-black">{{ transaction.tanggal }}</div>
+                    <div class="text-black">{{ transaction.kategori }}</div>
+                </div>
+                {% empty %}
+                <div class="p-4 text-center text-black">
+                    Tidak ada riwayat transaksi
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="flex justify-between mt-4">
+                {% if transactions.has_previous %}
+                    <a href="?page={{ transactions.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                {% else %}
+                    <button class="btn btn-secondary opacity-50 cursor-not-allowed" disabled>Previous</button>
+                {% endif %}
+
+                {% if transactions.has_next %}
+                    <a href="?page={{ transactions.next_page_number }}" class="btn btn-secondary">Next</a>
+                {% else %}
+                    <button class="btn btn-secondary opacity-50 cursor-not-allowed" disabled>Next</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

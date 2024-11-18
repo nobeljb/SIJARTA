@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIJARTA</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sijarta': {
+                            'text': '#283D3B',
+                            'bg': '#FFFFFF',
+                            'primary': '#2C5F59',
+                            'secondary': '#E7D7C1',
+                            'accent': '#00DFC9',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-sijarta-bg text-sijarta-text">
+    <div class="min-h-screen">
+        {% block navbar %}
+        {% endblock navbar %}
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>
