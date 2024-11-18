@@ -1,5 +1,13 @@
 {% extends 'base.html' %}
 
+{% block navbar %}
+    {% if user_role == 'Pekerja' %}
+        {% include 'navbar_pekerja.html' %}
+    {% else %}
+        {% include 'navbar_pengguna.html' %}
+    {% endif %}
+{% endblock navbar %}
+
 {% block content %}
 <div class="container mx-auto p-6 bg-white rounded-lg shadow-lg mt-8 max-w-xl">
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">{{ subcategory.name }}</h1>

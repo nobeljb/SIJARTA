@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-{% include 'navbar_guest.html' %}
+    {% if user_role == 'Pekerja' %}
+        {% include 'navbar_pekerja.html' %}
+    {% else %}
+        {% include 'navbar_pengguna.html' %}
+    {% endif %}
 {% endblock navbar %}
 
 {% block content %}
 <div class="bg-gray-100 min-h-screen py-8">
-    <div class="container mx-auto p-6 bg-white rounded-lg shadow-lg max-w-6xl">
+    <div class="container mx-auto p-6 bg-white rounded-lg shadow-lg max-w-xl">
         <h1 class="text-3xl font-bold text-center mb-6">Daftar Kategori Jasa</h1>
 
         <!-- Filter Dropdown Kategori -->
@@ -41,18 +45,16 @@
                             {% if subcategory.category_id == category.id %}
                                 <li class="subcategory-item mb-4">
                                     <div class="flex justify-between items-center">
-                                        <div class="flex space-x-4">
-                                            <!-- Tautan untuk pengguna biasa -->
-                                            <a href="{% url 'subcategory_detail_user' category.id subcategory.name %}" class="text-blue-600 hover:text-blue-800 font-medium">
-                                                [User] {{ subcategory.name }} - {{ subcategory.description }}
-                                            </a>
-                                        </div>
-                                        <div class="flex space-x-4">
-                                            <!-- Tautan untuk pekerja -->
+                                        <!-- Tampilkan tautan sesuai peran pengguna -->
+                                        {% if user_role == 'Pekerja' %}
                                             <a href="{% url 'subcategory_detail_worker' category.id subcategory.name %}" class="text-green-600 hover:text-green-800 font-medium">
-                                                [Worker] {{ subcategory.name }} - {{ subcategory.description }}
+                                                {{ subcategory.name }} - {{ subcategory.description }}
                                             </a>
-                                        </div>
+                                        {% else %}
+                                            <a href="{% url 'subcategory_detail_user' category.id subcategory.name %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                                {{ subcategory.name }} - {{ subcategory.description }}
+                                            </a>
+                                        {% endif %}
                                     </div>
                                 </li>
                             {% endif %}
@@ -94,7 +96,6 @@
         var subcategorySections = document.querySelectorAll('.subcategory-category');
         
         subcategorySections.forEach(function(section) {
-            var categoryTitle = section.querySelector('.category-title');
             var subcategoryItems = section.querySelectorAll('.subcategory-item');
             var categoryHasVisibleSubcategory = false;
 
