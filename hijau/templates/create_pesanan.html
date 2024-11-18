@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-4">
+    <h2 class="text-2xl font-bold mb-4">Formulir Pemesanan Jasa</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Tanggal Pemesanan -->
+        <div class="mb-4">
+            <label for="tanggal_pemesanan" class="block text-gray-700 font-semibold mb-2">Tanggal Pemesanan</label>
+            {{ form.tanggal_pemesanan }}
+        </div>
+        
+        <!-- Kode Diskon -->
+        <div class="mb-4">
+            <label for="diskon" class="block text-gray-700 font-semibold mb-2">Kode Promo</label>
+            {{ form.diskon }}
+        </div>
+        
+        <!-- Total Pembayaran -->
+        <div class="mb-4">
+            <label for="total_pembayaran" class="block text-gray-700 font-semibold mb-2">Total Pembayaran</label>
+            {{ form.total_pembayaran }}
+        </div>
+        
+        <!-- Metode Pembayaran -->
+        <div class="mb-4">
+            <label for="metode_bayar" class="block text-gray-700 font-semibold mb-2">Metode Pembayaran</label>
+            {{ form.metode_bayar }}
+        </div>
+        
+        <!-- Submit Button -->
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit</button>
+    </form>
+</div>
+
+{% endblock %}

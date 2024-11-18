@@ -1,6 +1,7 @@
-from django.shortcuts import get_object_or_404, render
-from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect, render
+from django.http import Http404, HttpResponse
 from datetime import datetime
+from django import forms
 
 def homepage(request):
     categories = [
@@ -121,3 +122,70 @@ def worker_detail(request, worker_id):
     }
 
     return render(request, 'worker_detail.html', context)
+
+# Dummy form untuk pemesanan
+class PemesananForm(forms.Form):
+    tanggal_pemesanan = forms.DateField(widget=forms.SelectDateWidget(), initial=forms.fields.DateField)
+    diskon = forms.CharField(max_length=100, required=False)
+    total_pembayaran = forms.DecimalField(max_digits=10, decimal_places=2, initial=50000, required=False)
+    metode_bayar = forms.ChoiceField(choices=[
+        ('transfer', 'Transfer Bank'),
+        ('credit_card', 'Kartu Kredit'),
+        ('e-wallet', 'E-Wallet'),
+        ('cash', 'Bayar Tunai')
+    ])
+
+def create_pemesanan(request):
+    if request.method == 'POST':
+        form = PemesananForm(request.POST)
+        if form.is_valid():
+            # Logika untuk menghitung total pembayaran dengan diskon
+            diskon_code = form.cleaned_data['diskon']
+            total_pembayaran = form.cleaned_data['total_pembayaran']
+            if diskon_code == 'PROMO100':
+                total_pembayaran -= 10000  # Potongan diskon 10.000
+
+            # Lakukan pengolahan lainnya jika perlu, misalnya menyimpan data ke database
+            
+            # Redirect ke halaman View Pemesanan Jasa
+            return redirect('view_pemesanan')
+    else:
+        form = PemesananForm()
+
+    return render(request, 'create_pesanan.html', {'form': form})
+
+
+
+def view_pemesanan(request):
+    # Dummy data pesanan
+    pesanan = [
+        {
+            'session_name': 'Layanan A',
+            'session_price': 150000,
+            'status': 'menunggu_pembayaran',
+            'testimoni': '',
+        },
+        {
+            'session_name': 'Layanan B',
+            'session_price': 200000,
+            'status': 'mencari_pekerja',
+            'testimoni': '',
+        },
+        {
+            'session_name': 'Layanan C',
+            'session_price': 250000,
+            'status': 'pesanan_selesai',
+            'testimoni': '',
+        },
+        {
+            'session_name': 'Layanan D',
+            'session_price': 300000,
+            'status': 'pesanan_selesai',
+            'testimoni': 'Testimoni sudah ada',
+        },
+    ]
+    
+    context = {
+        'pesanan': pesanan,
+    }
+    return render(request, 'view_pemesanan.html', context)

@@ -8,7 +8,9 @@
     <ul>
         {% for session in sessions %}
             <li>{{ session.name }} - Rp {{ session.price }}
-                <button onclick="alert('Pemesanan sesi: {{ session.name }}')">Pesan</button>
+                <a href="{% url 'create_pemesanan' %}?session_name={{ session.name }}&session_price={{ session.price }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Pesan
+                </a>
             </li>
         {% endfor %}
     </ul>

@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'merah',
     'hijau',
     'kuning',
-    'biru',
     'landing_page',
 ]
 
