@@ -1,0 +1,203 @@
+<!-- transaksi_mypay.html -->
+
+{% extends 'base.html' %}
+
+{% block navbar %}
+    {% if user_role == 'Pekerja' %}
+        {% include 'navbar_pekerja.html' %}
+    {% else %}
+        {% include 'navbar_pengguna.html' %}
+    {% endif %}
+{% endblock navbar %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <!-- White background card -->
+    <div class="bg-secondary rounded-lg shadow-md p-8">
+        <h1 class="text-2xl font-semibold text-black text-center mb-8">Transaksi MyPay</h1>
+        
+        <form id="transaksiForm" method="post">
+            {% csrf_token %}
+            
+            <!-- Kategori Transaksi -->
+            <div class="mb-6">
+                <label for="kategori" class="block text-black mb-2 font-medium">Kategori Transaksi:</label>
+                <select id="kategori" name="kategori" class="w-full rounded-md border-black focus:border-primary focus:ring-2 focus:ring-primary-light">
+                    <option value="">Pilih Kategori</option>
+                    <option value="TopUp">Top Up MyPay</option>
+                    {% if user_role == 'Pengguna' %}
+                    <option value="Payment">Pembayaran Jasa</option>
+                    {% endif %}
+                    <option value="Transfer">Transfer MyPay</option>
+                    <option value="Withdrawal">Withdrawal</option>
+                </select>
+            </div>
+            
+            <!-- State 1: Top Up -->
+            <div id="stateTopUp" class="mb-6 hidden">
+                <label for="nominal_topup" class="block text-black mb-2 font-medium">Nominal Top Up:</label>
+                <input type="number" id="nominal_topup" name="nominal_topup" class="w-full rounded-md border-black focus:border-primary focus:ring-2 focus:ring-primary-light">
+            </div>
+            
+            <!-- State 2: Payment -->
+            <div id="statePayment" class="mb-6 hidden">
+                <label for="jasa" class="block text-black mb-2 font-medium">Pilih Jasa:</label>
+                <select id="jasa" name="jasa" class="w-full rounded-md border-black focus:border-primary focus:ring-2 focus:ring-primary-light mb-4">
+                    <option value="">Pilih Jasa</option>
+                    <option value="Jasa A">Jasa A</option>
+                    <option value="Jasa B">Jasa B</option>
+                    <option value="Jasa C">Jasa C</option>
+                </select>
+                
+                <label for="nominal_payment" class="block text-black mb-2 font-medium">Jumlah Nominal:</label>
+                <input type="number" id="nominal_payment" name="nominal_payment" class="w-full rounded-md bg-gray-50" readonly>
+            </div>
+            
+            <!-- State 3: Transfer -->
+            <div id="stateTransfer" class="mb-6 hidden">
+                <label for="no_hp_tujuan" class="block text-black mb-2 font-medium">No HP Tujuan:</label>
+                <input type="text" id="no_hp_tujuan" name="no_hp_tujuan" class="w-full rounded-md border-black focus:border-primary focus:ring-2 focus:ring-primary-light mb-4">
+                
+                <label for="nominal_transfer" class="block text-black mb-2 font-medium">Nominal Transfer:</label>
+                <input type="number" id="nominal_transfer" name="nominal_transfer" class="w-full rounded-md border-black focus:border-primary focus:ring-2 focus:ring-primary-light">
+            </div>
+            
+            <!-- State 4: Withdrawal -->
+            <div id="stateWithdrawal" class="mb-6 hidden">
+                <label for="bank" class="block text-black mb-2 font-medium">Pilih Bank:</label>
+                <select id="bank" name="bank" class="w-full rounded-md border-black focus:border-primary focus:ring-2 focus:ring-primary-light mb-4">
+                    <option value="">Pilih Bank</option>
+                    <option value="Bank A">Bank A</option>
+                    <option value="Bank B">Bank B</option>
+                    <option value="Bank C">Bank C</option>
+                </select>
+                
+                <label for="nomor_rekening" class="block text-black mb-2 font-medium">Nomor Rekening:</label>
+                <input type="text" id="nomor_rekening" name="nomor_rekening" class="w-full rounded-md border-black focus:border-primary focus:ring-2 focus:ring-primary-light mb-4">
+                
+                <label for="nominal_withdrawal" class="block text-black mb-2 font-medium">Nominal Withdrawal:</label>
+                <input type="number" id="nominal_withdrawal" name="nominal_withdrawal" class="w-full rounded-md border-black focus:border-primary focus:ring-2 focus:ring-primary-light">
+            </div>
+            
+            <div class="flex justify-center">
+                <button type="submit" class="btn btn-primary px-8">Proses Transaksi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const kategori = document.getElementById('kategori');
+        const stateTopUp = document.getElementById('stateTopUp');
+        const statePayment = document.getElementById('statePayment');
+        const stateTransfer = document.getElementById('stateTransfer');
+        const stateWithdrawal = document.getElementById('stateWithdrawal');
+        const jasa = document.getElementById('jasa');
+        const nominalPayment = document.getElementById('nominal_payment');
+        const form = document.getElementById('transaksiForm');
+        
+        kategori.addEventListener('change', function() {
+            // Hide all states
+            stateTopUp.classList.add('hidden');
+            statePayment.classList.add('hidden');
+            stateTransfer.classList.add('hidden');
+            stateWithdrawal.classList.add('hidden');
+            
+            // Reset fields
+            jasa.value = '';
+            nominalPayment.value = '';
+            
+            // Show relevant state
+            switch(this.value) {
+                case 'TopUp':
+                    stateTopUp.classList.remove('hidden');
+                    break;
+                case 'Payment':
+                    statePayment.classList.remove('hidden');
+                    // Set nominal based on selected jasa
+                    jasa.addEventListener('change', function() {
+                        // Dummy nominal based on jasa
+                        const jasaNominal = {
+                            'Jasa A': 50000,
+                            'Jasa B': 75000,
+                            'Jasa C': 100000
+                        };
+                        nominalPayment.value = jasaNominal[this.value] || '';
+                    });
+                    break;
+                case 'Transfer':
+                    stateTransfer.classList.remove('hidden');
+                    break;
+                case 'Withdrawal':
+                    stateWithdrawal.classList.remove('hidden');
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        // Add submit event listener
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate based on selected category
+            const selectedKategori = kategori.value;
+            let isValid = true;
+            let errorMessage = '';
+
+            if (!selectedKategori) {
+                errorMessage = 'Pilih kategori transaksi terlebih dahulu!';
+                isValid = false;
+            } else {
+                switch(selectedKategori) {
+                    case 'TopUp':
+                        const nominalTopup = document.getElementById('nominal_topup').value;
+                        if (!nominalTopup) {
+                            errorMessage = 'Nominal top up tidak boleh kosong!';
+                            isValid = false;
+                        }
+                        break;
+                    case 'Payment':
+                        const selectedJasa = document.getElementById('jasa').value;
+                        if (!selectedJasa) {
+                            errorMessage = 'Pilih jasa terlebih dahulu!';
+                            isValid = false;
+                        }
+                        break;
+                    case 'Transfer':
+                        const noHp = document.getElementById('no_hp_tujuan').value;
+                        const nominalTransfer = document.getElementById('nominal_transfer').value;
+                        if (!noHp || !nominalTransfer) {
+                            errorMessage = 'No HP dan nominal transfer tidak boleh kosong!';
+                            isValid = false;
+                        }
+                        break;
+                    case 'Withdrawal':
+                        const bank = document.getElementById('bank').value;
+                        const noRek = document.getElementById('nomor_rekening').value;
+                        const nominalWithdrawal = document.getElementById('nominal_withdrawal').value;
+                        if (!bank || !noRek || !nominalWithdrawal) {
+                            errorMessage = 'Bank, nomor rekening, dan nominal withdrawal tidak boleh kosong!';
+                            isValid = false;
+                        }
+                        break;
+                }
+            }
+
+            if (isValid) {
+                alert('Transaksi berhasil!');
+                this.reset();
+                // Hide all states
+                stateTopUp.classList.add('hidden');
+                statePayment.classList.add('hidden');
+                stateTransfer.classList.add('hidden');
+                stateWithdrawal.classList.add('hidden');
+            } else {
+                alert(errorMessage);
+            }
+        });
+
+    });
+</script>
+{% endblock %}

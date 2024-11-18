@@ -2,6 +2,14 @@
 
 {% extends 'base.html' %}
 
+{% block navbar %}
+    {% if user_role == 'Pekerja' %}
+        {% include 'navbar_pekerja.html' %}
+    {% else %}
+        {% include 'navbar_pengguna.html' %}
+    {% endif %}
+{% endblock navbar %}
+
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <!-- Header -->
@@ -20,9 +28,9 @@
                 <div class="text-black">Saldo:</div>
                 <div class="font-semibold text-primary">Rp {{ balance|default:"0" }}</div>
             </div>
-            <button class="btn btn-primary">
+            <a href="{% url 'mypay:transaksi_mypay' %}" class="btn btn-primary">
                 Lakukan Transaksi
-            </button>
+            </a>
         </div>
 
         <!-- Transaction History -->
