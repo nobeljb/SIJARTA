@@ -1,0 +1,26 @@
+<body>
+    <h1>Login</h1>
+    
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{% url 'kuning:login' %}">
+        {% csrf_token %}
+        
+        <label for="nohp">Nomor HP:</label><br>
+        <input type="text" id="nohp" name="nohp" required><br><br>
+        
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+        
+        <input type="submit" value="Login">
+    </form>
+    
+    <br>
+    <p>Belum punya akun? <a href="{% url 'kuning:choose_role' %}">Daftar di sini</a></p>
+</body>
