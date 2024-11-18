@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-4 py-4">
+        <h2 class="text-2xl font-semibold text-[#283D3B] mb-6 mt-8">Testimoni</h2>
+        <ul class="space-y-4">
+            {% for testimony in testimonies %}
+                <li class="bg-[#F3EBE0] bg-opacity-50 rounded-lg p-4 border border-[#2C5F59] shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <strong class="font-semibold text-[#283D3B]">{{ testimony.user_name }}</strong>
+                            <span class="text-[#2C5F59] text-sm">({{ testimony.date }})</span>
+                        </div>
+                        <div class="text-[#00DFC9]">
+                            {{ testimony.rating }} ★
+                        </div>
+                    </div>
+                    <p class="italic text-[#283D3B] mb-2">"{{ testimony.testimony_text }}"</p>
+                    <span class="text-[#2C5F59] text-sm">Pekerja: {{ testimony.worker_name }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

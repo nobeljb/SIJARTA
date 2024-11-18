@@ -1,0 +1,95 @@
+<!-- templates/kuning/update_profile.html -->
+{% extends 'base.html' %}
+
+{% block navbar %}
+    {% include 'navbar_pekerja.html' %}
+{% endblock navbar %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; padding: 40px 20px;">
+    <div style="width: 100%; max-width: 500px; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+        <h1 style="text-align: center; color: #2F4F4F; margin-bottom: 20px;">Update Profile</h1>
+
+        <form method="POST" action="{% url 'kuning:update_pekerja' %}" style="display: flex; flex-direction: column; gap: 15px;">
+            {% csrf_token %}
+            
+            <!-- Nama -->
+            <div>
+                <label for="nama" style="display: inline-block; width: 120px;">Nama</label>
+                <input type="text" id="nama" name="nama" value="{{ nama }}" 
+                       style="width: 250px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <!-- Jenis Kelamin -->
+            <div>
+                <label style="display: inline-block; width: 120px;">Jenis Kelamin</label>
+                <input type="radio" id="laki" name="jenis_kelamin" value="L" {% if jenis_kelamin == 'L' %}checked{% endif %}>
+                <label for="laki">L</label>
+                <input type="radio" id="perempuan" name="jenis_kelamin" value="P" {% if jenis_kelamin == 'P' %}checked{% endif %}>
+                <label for="perempuan">P</label>
+            </div>
+
+            <!-- No HP -->
+            <div>
+                <label for="nohp" style="display: inline-block; width: 120px;">NoHP</label>
+                <input type="text" id="nohp" name="nohp" value="{{ nohp }}"
+                       style="width: 250px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <!-- Tanggal Lahir -->
+            <div>
+                <label for="tanggal_lahir" style="display: inline-block; width: 120px;">Tanggal Lahir</label>
+                <input type="date" id="tanggal_lahir" name="tanggal_lahir" value="{{ tanggal_lahir }}"
+                       style="width: 250px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <!-- Alamat -->
+            <div>
+                <label for="alamat" style="display: inline-block; width: 120px;">Alamat</label>
+                <input type="text" id="alamat" name="alamat" value="{{ alamat }}"
+                       style="width: 250px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <!-- Nama Bank -->
+            <div>
+                <label for="nama_bank" style="display: inline-block; width: 120px;">Nama Bank</label>
+                <select id="nama_bank" name="nama_bank" 
+                        style="width: 250px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    {% for bank in bank_list %}
+                        <option value="{{ bank }}" {% if nama_bank == bank %}selected{% endif %}>{{ bank }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- No Rekening -->
+            <div>
+                <label for="rekening" style="display: inline-block; width: 120px;">No Rekening</label>
+                <input type="text" id="rekening" name="rekening" value="{{ rekening }}"
+                       style="width: 250px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <!-- NPWP -->
+            <div>
+                <label for="npwp" style="display: inline-block; width: 120px;">NPWP</label>
+                <input type="text" id="npwp" name="npwp" value="{{ npwp }}"
+                       style="width: 250px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <!-- URL Foto -->
+            <div>
+                <label for="foto" style="display: inline-block; width: 120px;">URL Foto</label>
+                <input type="text" id="foto" name="foto" value="{{ foto }}"
+                       style="width: 250px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <!-- Submit Button -->
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="submit" 
+                        style="background-color: #2F4F4F; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
