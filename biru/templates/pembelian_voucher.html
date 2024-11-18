@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block navbar %}
+    {% if user_role == 'Pekerja' %}
+        {% include 'navbar_pekerja.html' %}
+    {% else %}
+        {% include 'navbar_pengguna.html' %}
+    {% endif %}
+{% endblock navbar %}
+
+{% block content %}
+<div class="container mx-auto p-6 bg-white rounded-lg shadow-lg mt-8 max-w-xl">
+    <h1 class="text-3xl font-semibold text-[#283D3B] mb-6 text-center">Pembelian Voucher</h1>
+
+    <!-- Popup Modal -->
+    <div id="popup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all">
+            <div class="p-6">
+                <h2 id="popup-title" class="text-2xl font-bold text-[#2C5F59] mb-4 text-center"></h2>
+                <div id="popup-message" class="text-[#283D3B] text-lg mb-6"></div>
+                <div class="text-center">
+                    <button id="close-popup" 
+                            class="px-6 py-2 bg-[#2C5F59] text-white rounded-lg hover:bg-[#00DFC9] transition-colors duration-200">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Content -->
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Kode Voucher -->
+        <div>
+            <label for="voucher_code" class="text-lg font-medium text-[#283D3B] block mb-2">
+                Kode Voucher
+            </label>
+            <input type="text" 
+                   id="voucher_code" 
+                   name="voucher_code" 
+                   class="w-full px-4 py-2 border border-[#E7D7C1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00DFC9] focus:border-transparent"
+                   required>
+        </div>
+
+        <!-- Harga -->
+        <div>
+            <label for="price" class="text-lg font-medium text-[#283D3B] block mb-2">
+                Harga
+            </label>
+            <div class="relative">
+                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                <input type="number" 
+                       id="price" 
+                       name="price" 
+                       class="w-full pl-10 pr-4 py-2 border border-[#E7D7C1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00DFC9] focus:border-transparent"
+                       required>
+            </div>
+        </div>
+
+        <!-- Metode Pembayaran -->
+        <div>
+            <label for="payment_method" class="text-lg font-medium text-[#283D3B] block mb-2">
+                Metode Pembayaran
+            </label>
+            <select id="payment_method" 
+                    name="payment_method" 
+                    class="w-full px-4 py-2 border border-[#E7D7C1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00DFC9] focus:border-transparent bg-white"
+                    required>
+                <option value="">Pilih metode pembayaran</option>
+                <option value="transfer">Transfer Bank</option>
+                <option value="ewallet">E-Wallet</option>
+                <option value="credit">Kartu Kredit</option>
+            </select>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-8 text-center">
+            <button type="submit" 
+                    class="w-full sm:w-auto px-6 py-3 bg-[#2C5F59] text-white font-semibold rounded-lg hover:bg-[#00DFC9] transition-colors duration-200">
+                Beli Voucher
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function buyVoucher(voucherCode, endDate, quota, balance, price) {
+        const popup = document.getElementById('popup');
+        const title = document.getElementById('popup-title');
+        const message = document.getElementById('popup-message');
+
+        if (balance >= price) {
+            title.textContent = 'SUKSES';
+            message.innerHTML = `
+                <p class="text-center">
+                    Selamat! Anda berhasil membeli voucher dengan kode 
+                    <span class="font-semibold text-[#2C5F59]">${voucherCode}</span>.
+                    <br><br>
+                    Voucher ini akan berlaku hingga tanggal 
+                    <span class="font-semibold text-[#2C5F59]">${endDate}</span>
+                    dengan kuota penggunaan sebanyak 
+                    <span class="font-semibold text-[#2C5F59]">${quota}</span> kali.
+                </p>
+            `;
+        } else {
+            title.textContent = 'GAGAL';
+            message.innerHTML = `
+                <p class="text-center text-red-600">
+                    Maaf, saldo Anda tidak cukup untuk membeli voucher ini.
+                </p>
+            `;
+        }
+        popup.classList.remove('hidden');
+    }
+
+    document.getElementById('close-popup').addEventListener('click', () => {
+        document.getElementById('popup').classList.add('hidden');
+    });
+</script>
+{% endblock %}

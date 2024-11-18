@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block navbar %}
+    {% if user_role == 'Pekerja' %}
+        {% include 'navbar_pekerja.html' %}
+    {% else %}
+        {% include 'navbar_pengguna.html' %}
+    {% endif %}
+{% endblock navbar %}
+
+{% block content %}
+<div class="container mx-auto p-6 bg-white rounded-lg shadow-lg mt-8 max-w-4xl">
+    <!-- Popup Modal -->
+    <div id="popup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all">
+            <div class="p-6">
+                <h2 id="popup-title" class="text-2xl font-bold text-[#2C5F59] mb-4 text-center"></h2>
+                <div id="popup-message" class="text-[#283D3B] text-lg mb-6"></div>
+                <div class="text-center">
+                    <button id="close-popup" 
+                            class="px-6 py-2 bg-[#2C5F59] text-white rounded-lg hover:bg-[#00DFC9] transition-colors duration-200">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Title -->
+    <h1 class="text-4xl font-bold text-[#283D3B] mb-8 text-center">Diskon</h1>
+    
+    <!-- Voucher Section -->
+    <div class="mb-12">
+        <h2 class="text-2xl font-semibold text-[#2C5F59] mb-6">Voucher</h2>
+        <div class="space-y-6">
+            {% for voucher in vouchers %}
+            <div class="bg-[#F3EBE0] bg-opacity-50 border border-[#2C5F59] rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-medium text-[#283D3B]">
+                            {{ voucher.code }} | {{ voucher.discount }}
+                        </h3>
+                        <p class="text-sm text-[#283D3B]">
+                            Min Transaction: {{ voucher.min_transaction }} | Remaining: {{ voucher.remaining_days }} days
+                        </p>
+                        <p class="text-sm text-[#283D3B]">
+                            Quota: {{ voucher.quota }} | Price: {{ voucher.price }}
+                        </p>
+                    </div>
+                    <button
+                        onclick="handleVoucherPurchase('{{ voucher.code }}', '{{ voucher.end_date }}', {{ voucher.quota }}, {{ voucher.price }})"
+                        class="px-4 py-2 bg-[#00DFC9] text-[#283D3B] font-medium rounded-lg hover:bg-[#2C5F59] hover:text-white transition duration-200">
+                        Buy Voucher
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Promo Section -->
+    <div>
+        <h2 class="text-2xl font-semibold text-[#2C5F59] mb-6">Promo</h2>
+        <div class="space-y-4">
+            {% for promo in promos %}
+            <div class="flex justify-between items-center bg-[#F3EBE0] bg-opacity-50 border border-[#2C5F59] rounded-lg p-4 shadow-sm">
+                <div>
+                    <h3 class="text-lg font-medium text-[#283D3B]">{{ promo.code }}</h3>
+                    <p class="text-sm text-[#283D3B]">Ends: {{ promo.end_date }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to handle voucher purchase
+    function handleVoucherPurchase(voucherCode, endDate, quota, price) {
+        // You can get the user's balance from your backend/session
+        // For now, let's simulate with a fixed balance
+        const userBalance = 1000000; // Example balance
+        
+        const popup = document.getElementById('popup');
+        const title = document.getElementById('popup-title');
+        const message = document.getElementById('popup-message');
+
+        if (userBalance >= price) {
+            title.textContent = 'SUKSES';
+            message.innerHTML = `
+                <p class="text-center">
+                    Selamat! Anda berhasil membeli voucher dengan kode 
+                    <span class="font-semibold text-[#2C5F59]">${voucherCode}</span>.
+                    <br><br>
+                    Voucher ini akan berlaku hingga tanggal 
+                    <span class="font-semibold text-[#2C5F59]">${endDate}</span>
+                    dengan kuota penggunaan sebanyak 
+                    <span class="font-semibold text-[#2C5F59]">${quota}</span> kali.
+                </p>
+            `;
+            
+            // Here you can add AJAX call to your backend to process the purchase
+            // fetch('/api/purchase-voucher', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         voucherCode,
+            //         endDate,
+            //         quota,
+            //         price
+            //     })
+            // });
+        } else {
+            title.textContent = 'GAGAL';
+            message.innerHTML = `
+                <p class="text-center text-red-600">
+                    Maaf, saldo Anda tidak cukup untuk membeli voucher ini.
+                </p>
+            `;
+        }
+        
+        popup.classList.remove('hidden');
+    }
+
+    // Close popup event listener
+    document.getElementById('close-popup').addEventListener('click', () => {
+        document.getElementById('popup').classList.add('hidden');
+    });
+
+    // Close popup when clicking outside
+    document.getElementById('popup').addEventListener('click', (e) => {
+        if (e.target.id === 'popup') {
+            document.getElementById('popup').classList.add('hidden');
+        }
+    });
+</script>
+{% endblock content %}

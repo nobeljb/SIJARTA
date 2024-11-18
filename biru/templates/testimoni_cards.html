@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold text-[#283D3B] mb-8 text-center">Testimoni</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for testimony in testimonies %}
+            <div class="bg-[#F3EBE0] bg-opacity-50 rounded-lg shadow-md p-6 border border-[#2C5F59] transition-transform hover:scale-105">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="font-medium text-[#283D3B]">{{ testimony.user_name }}</span>
+                    <span class="text-sm text-[#2C5F59]">{{ testimony.date }}</span>
+                </div>
+                <div class="mb-4">
+                    <p class="text-[#283D3B] leading-relaxed">{{ testimony.testimony_text }}</p>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-[#2C5F59]">{{ testimony.worker_name }}</span>
+                    <div class="text-[#00DFC9]">
+                        <span class="text-[#00DFC9]">{{ testimony.rating }} ★</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
