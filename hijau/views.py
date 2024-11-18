@@ -19,7 +19,7 @@ def homepage(request):
         {"category_id": 3, "category_name": "Kategori Jasa 3", "name": "Subkategori Jasa 3.2", "description": "Deskripsi subkategori 3.2"},
     ]
 
-    return render(request, 'index.html', {'categories': categories, 'subcategories': subcategories})
+    return render(request, 'homepage.html', {'categories': categories, 'subcategories': subcategories})
 
 
 from django.shortcuts import render
@@ -124,16 +124,52 @@ def worker_detail(request, worker_id):
     return render(request, 'worker_detail.html', context)
 
 # Dummy form untuk pemesanan
+from django import forms
+
 class PemesananForm(forms.Form):
-    tanggal_pemesanan = forms.DateField(widget=forms.SelectDateWidget(), initial=forms.fields.DateField)
-    diskon = forms.CharField(max_length=100, required=False)
-    total_pembayaran = forms.DecimalField(max_digits=10, decimal_places=2, initial=50000, required=False)
-    metode_bayar = forms.ChoiceField(choices=[
-        ('transfer', 'Transfer Bank'),
-        ('credit_card', 'Kartu Kredit'),
-        ('e-wallet', 'E-Wallet'),
-        ('cash', 'Bayar Tunai')
-    ])
+    tanggal_pemesanan = forms.DateField(
+        widget=forms.SelectDateWidget(attrs={
+            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4'
+        }),
+        initial=forms.fields.DateField,
+        label="Tanggal Pemesanan",
+    )
+    diskon = forms.CharField(
+        max_length=100, 
+        required=False, 
+        label="Diskon (Opsional)",
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Masukkan kode diskon jika ada'
+        })
+    )
+    total_pembayaran = forms.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        initial=50000, 
+        required=False, 
+        label="Total Pembayaran",
+        widget=forms.NumberInput(attrs={
+            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'readonly': 'readonly',
+            'value': '50000'
+        })
+    )
+    metode_bayar = forms.ChoiceField(
+        choices=[
+            ('transfer', 'Transfer Bank'),
+            ('credit_card', 'Kartu Kredit'),
+            ('e-wallet', 'E-Wallet'),
+            ('cash', 'Bayar Tunai')
+        ],
+        label="Metode Pembayaran",
+        widget=forms.Select(attrs={
+            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+        })
+    )
+    
+    # Optional: Button style for submit
+    submit_button = forms.CharField(widget=forms.HiddenInput(), initial="Submit", required=False)
 
 def create_pemesanan(request):
     if request.method == 'POST':
