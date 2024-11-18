@@ -1,4 +1,33 @@
-<h1>Register</h1>
-<p>Pilih tipe akun yang ingin didaftarkan:</p>
-<a href="register_pekerja">Register sebagai Pekerja</a>
-<a href="">Register sebagai Pengguna</a>
+<!-- templates/kuning/choose_role.html -->
+{% extends 'base.html' %}
+
+{% block navbar %}
+    {% include 'navbar_guest.html' %}
+{% endblock navbar %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+    <div style="width: 100%; max-width: 400px; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+        <h2 style="text-align: center; color: #2F4F4F; margin-bottom: 20px;">Pilih Role</h2>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <a href="{% url 'kuning:register_pengguna' %}" 
+               style="background-color: #2F4F4F; color: white; padding: 15px; border-radius: 4px; text-decoration: none; text-align: center;">
+                Daftar sebagai Pengguna
+            </a>
+            
+            <a href="{% url 'kuning:register_pekerja' %}" 
+               style="background-color: #F5F5DC; color: #2F4F4F; padding: 15px; border-radius: 4px; text-decoration: none; text-align: center;">
+                Daftar sebagai Pekerja
+            </a>
+        </div>
+        
+        <p style="text-align: center; margin-top: 15px;">
+            Sudah punya akun? 
+            <a href="{% url 'kuning:login' %}" style="color: #2F4F4F; text-decoration: none;">
+                Login di sini
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock content %}
