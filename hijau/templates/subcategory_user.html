@@ -19,7 +19,7 @@
         {% for session in sessions %}
             <li class="flex justify-between items-center">
                 <span>{{ session.name }} - Rp {{ session.price }}</span>
-                <a href="{% url 'create_pemesanan' %}?session_name={{ session.name }}&session_price={{ session.price }}" 
+                <a href="{% url 'hijau:create_pemesanan' %}?session_name={{ session.name }}&session_price={{ session.price }}" 
                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200">
                     Pesan
                 </a>
@@ -31,7 +31,7 @@
     <ul class="space-y-4 text-gray-700">
         {% for worker in workers %}
             <li>
-                <a href="{% url 'worker_detail' worker.id %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                <a href="{% url 'hijau:worker_detail' worker.id %}" class="text-blue-600 hover:text-blue-800 font-medium">
                     {{ worker.name }}
                 </a>
             </li>

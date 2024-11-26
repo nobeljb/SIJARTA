@@ -47,11 +47,11 @@
                                     <div class="flex justify-between items-center">
                                         <!-- Tampilkan tautan sesuai peran pengguna -->
                                         {% if user_role == 'Pekerja' %}
-                                            <a href="{% url 'subcategory_detail_worker' category.id subcategory.name %}" class="text-green-600 hover:text-green-800 font-medium">
+                                            <a href="{% url 'hijau:subcategory_detail_worker' category.id subcategory.name %}" class="text-green-600 hover:text-green-800 font-medium">
                                                 {{ subcategory.name }} - {{ subcategory.description }}
                                             </a>
                                         {% else %}
-                                            <a href="{% url 'subcategory_detail_user' category.id subcategory.name %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                            <a href="{% url 'hijau:subcategory_detail_user' category.id subcategory.name %}" class="text-blue-600 hover:text-blue-800 font-medium">
                                                 {{ subcategory.name }} - {{ subcategory.description }}
                                             </a>
                                         {% endif %}
