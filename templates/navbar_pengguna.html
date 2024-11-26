@@ -7,10 +7,10 @@
         <div style="display: flex; gap: 20px; align-items: center;">
             <span>Role: Pengguna</span>
             <span>Kaela Kovalskia</span>
-            <a href="/" style="color: white; text-decoration: none;">Homepage</a>
+            <a href="{% url 'hijau:homepage' %}" style="color: white; text-decoration: none;">Homepage</a>
             <a href="{% url 'mypay:dashboard' %}" style="color: white; text-decoration: none;">MyPay</a>
-            <a href="#" style="color: white; text-decoration: none;">Kelola Pesanan Saya</a>
-            <a href="#" style="color: white; text-decoration: none;">Diskon</a>
+            <a href="{% url 'hijau:view_pemesanan' %}" style="color: white; text-decoration: none;">Kelola Pesanan Saya</a>
+            <a href="{% url 'biru:diskon' %}" style="color: white; text-decoration: none;">Diskon</a>
             <a href="{% url 'kuning:show_profile' %}" style="color: white; text-decoration: none;">Profile</a>
             <a href="{% url 'kuning:logout' %}" style="color: white; text-decoration: none;">Logout</a>
         </div>

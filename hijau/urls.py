@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = 'hijau'
+
 urlpatterns = [
     path('', views.homepage, name='homepage'),
     path('subcategory/<int:category_id>/<str:subcategory_name>/', views.subcategory_detail_user, name='subcategory_detail_user'),
