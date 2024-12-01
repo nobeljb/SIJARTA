@@ -10,6 +10,10 @@
     <div style="width: 100%; max-width: 400px; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
         <h2 style="text-align: center; color: #2F4F4F; margin-bottom: 20px;">Login</h2>
 
+        {% if message %}
+            <p style="color: red;">{{ message }}</p>
+        {% endif %}
+
         <form method="POST" action="{% url 'kuning:login' %}" style="display: flex; flex-direction: column; gap: 15px;">
             {% csrf_token %}
             

@@ -19,88 +19,85 @@
                        <!-- Nama -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Nama</div>
-                           <div>: {{ nama }}</div>
-                       </div>
-
-                       <!-- Level -->
-                       <div style="display: flex; margin-bottom: 15px;">
-                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Level</div>
-                           <div>: Level {{ Level }}</div>
+                           <div>: {{ penggunalogin.nama }}</div>
                        </div>
 
                        <!-- Jenis Kelamin -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Jenis Kelamin</div>
-                           <div>: {{ jenis_kelamin }}</div>
+                           <div>: {{ penggunalogin.jeniskelamin }}</div>
                        </div>
 
                        <!-- No HP -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">No HP</div>
-                           <div>: {{ nohp }}</div>
+                           <div>: {{ penggunalogin.nohp }}</div>
                        </div>
 
                        <!-- Tanggal Lahir -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Tanggal Lahir</div>
-                           <div>: {{ tanggal_lahir }}</div>
+                           <div>: {{ penggunalogin.tgllahir }}</div>
                        </div>
 
                        <!-- Alamat -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Alamat</div>
-                           <div>: {{ alamat }}</div>
+                           <div>: {{ penggunalogin.alamat }}</div>
                        </div>
 
                        <!-- Saldo -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Saldo MyPay</div>
-                           <div>: Rp {{ saldo }}</div>
+                           <div>: Rp {{ penggunalogin.saldomypay }}</div>
                        </div>
 
                        <!-- Nama Bank -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Nama Bank</div>
-                           <div>: {{ nama_bank }}</div>
+                           <div>: {{ penggunalogin.namabank }}</div>
                        </div>
 
                        <!-- No Rekening -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">No Rekening</div>
-                           <div>: {{ rekening }}</div>
+                           <div>: {{ penggunalogin.nomorrekening }}</div>
                        </div>
 
                        <!-- NPWP -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">NPWP</div>
-                           <div>: {{ npwp }}</div>
+                           <div>: {{ penggunalogin.npwp }}</div>
                        </div>
 
                        <!-- Rating -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Rating</div>
-                           <div>: {{ rating }}</div>
+                           <div>: {{ penggunalogin.rating }}</div>
                        </div>
 
                        <!-- Jumlah Pesanan -->
                        <div style="display: flex; margin-bottom: 15px;">
                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Jumlah Pesanan Selesai</div>
-                           <div>: {{ jumlah_pesanan }}</div>
+                           <div>: {{ penggunalogin.jmlpesananselesai }}</div>
                        </div>
 
                        <!-- Kategori Pekerjaan -->
-                       <div style="display: flex; margin-bottom: 15px;">
-                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Kategori Pekerjaan</div>
-                           <div>: {{ kategori_pekerjaan }}</div>
-                       </div>
-                   </div>
+                        <div style="display: flex; margin-bottom: 15px;">
+                            <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Kategori Pekerjaan</div>
+                            <div>: </div>
+                        </div>
+                        {% for item in penggunalogin.kategori %}
+                        <div>- {{item}}</div>
+                        {% endfor %}
+                    </div>
 
                    <!-- Kolom Kanan - Foto -->
                    <div style="margin-left: 20px;">
-                       <div style="width: 150px; height: 150px; border: 1px solid #ddd; border-radius: 4px; display: flex; justify-content: center; align-items: center;">
-                           Foto
-                       </div>
-                   </div>
+                        <div style="width: 150px; height: 150px; border: 1px solid #ddd; border-radius: 4px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                            <img src="{{ penggunalogin.foto }}" style="max-width: 100%; max-height: 100%; object-fit: cover;">
+                        </div>
+                    </div>
                </div>
            </div>
 

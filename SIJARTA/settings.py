@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'kuning',
     'biru',
     'landing_page',
+    'testquery',
 ]
 
 MIDDLEWARE = [
@@ -80,8 +81,15 @@ WSGI_APPLICATION = 'SIJARTA.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'postgres.rqtrcstnivaarhkegiuc',
+        'PASSWORD': 'basdatsigmasijarta',
+        'HOST': 'aws-0-ap-southeast-1.pooler.supabase.com',
+        'PORT': '6543',
+        'OPTIONS': {
+            'options': '-c search_path=sijarta, public'
+        }
     }
 }
 
@@ -129,3 +137,5 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
