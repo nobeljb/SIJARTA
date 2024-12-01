@@ -5,8 +5,7 @@
             SIJARTA
         </div>
         <div style="display: flex; gap: 20px; align-items: center;">
-            <span>Role: Pekerja</span>
-            <span>Vestia Zeta</span>
+            <span>Halo, {{penggunalogin.nama}}(Pekerja)</span>
             <a href="{% url 'hijau:homepage' %}" style="color: white; text-decoration: none;">Homepage</a>
             <a href="{% url 'mypay:pekerja_jasa' %}" style="color: white; text-decoration: none;">Kelola Pekerjaan Saya</a>
             <a href="{% url 'mypay:status_pekerjaan' %}" style="color: white; text-decoration: none;">Kelola Status Pekerjaan</a>
