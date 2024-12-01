@@ -205,6 +205,7 @@ def update_pekerja(request):
         nomorrekening = request.POST.get('rekening')
         npwp = request.POST.get('npwp')
         foto = request.POST.get('foto')
+        print(namabank)
 
         # Update data pada database
         query_str = f"""
@@ -259,6 +260,7 @@ def update_pekerja(request):
         penggunaUpdate['kategori']=[]
         for row in kategori:
             penggunaUpdate['kategori'].append(row['namakategori'])
+        print(penggunaUpdate)
         
         request.session['penggunalogin'] = penggunaUpdate
 
