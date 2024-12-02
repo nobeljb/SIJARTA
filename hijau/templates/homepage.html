@@ -19,7 +19,7 @@
             <select id="category-dropdown" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Pilih Kategori</option>
                 {% for category in categories %}
-                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    <option value="{{ category.id_kategori_jasa }}">{{ category.namakategori }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -38,21 +38,21 @@
         <!-- Daftar Subkategori per Kategori -->
         <div id="subcategory-list">
             {% for category in categories %}
-                <div id="category-{{ category.id }}" class="subcategory-category mb-6">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">{{ category.name }}</h2>
+                <div id="category-{{ category.id_kategori_jasa }}" class="subcategory-category mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">{{ category.namakategori }}</h2>
                     <ul>
                         {% for subcategory in subcategories %}
-                            {% if subcategory.category_id == category.id %}
+                            {% if subcategory.kategorijasaid == category.id_kategori_jasa %}
                                 <li class="subcategory-item mb-4">
                                     <div class="flex justify-between items-center">
                                         <!-- Tampilkan tautan sesuai peran pengguna -->
                                         {% if user_role == 'Pekerja' %}
-                                            <a href="{% url 'hijau:subcategory_detail_worker' category.id subcategory.name %}" class="text-green-600 hover:text-green-800 font-medium">
-                                                {{ subcategory.name }} - {{ subcategory.description }}
+                                            <a href="" class="text-green-600 hover:text-green-800 font-medium">
+                                                {{ subcategory.nama }} - {{ subcategory.deskripsi }}
                                             </a>
                                         {% else %}
-                                            <a href="{% url 'hijau:subcategory_detail_user' category.id subcategory.name %}" class="text-blue-600 hover:text-blue-800 font-medium">
-                                                {{ subcategory.name }} - {{ subcategory.description }}
+                                            <a href="" class="text-blue-600 hover:text-blue-800 font-medium">
+                                                {{ subcategory.nama }} - {{ subcategory.deskripsi }}
                                             </a>
                                         {% endif %}
                                     </div>
@@ -100,8 +100,8 @@
             var categoryHasVisibleSubcategory = false;
 
             subcategoryItems.forEach(function(item) {
-                var subcategoryName = item.querySelector('a').textContent.toLowerCase();
-                if (subcategoryName.includes(searchTerm)) {
+                var subcategorynama = item.querySelector('a').textContent.toLowerCase();
+                if (subcategorynama.includes(searchTerm)) {
                     item.style.display = 'block';
                     categoryHasVisibleSubcategory = true;
                 } else {

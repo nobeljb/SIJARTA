@@ -2,28 +2,34 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404, HttpResponse
 from datetime import datetime
 from django import forms
+from utils.query import query
 
 DUMMY_USER = {
     'role': 'Pengguna',
 }
 
 def homepage(request):
-    categories = [
-        {"id": 1, "name": "Kategori Jasa 1"},
-        {"id": 2, "name": "Kategori Jasa 2"},
-        {"id": 3, "name": "Kategori Jasa 3"}
-    ]
-    
-    subcategories = [
-        {"category_id": 1, "category_name": "Kategori Jasa 1", "name": "Subkategori Jasa 1.1", "description": "Deskripsi subkategori 1.1"},
-        {"category_id": 1, "category_name": "Kategori Jasa 1", "name": "Subkategori Jasa 1.2", "description": "Deskripsi subkategori 1.2"},
-        {"category_id": 2, "category_name": "Kategori Jasa 2", "name": "Subkategori Jasa 2.1", "description": "Deskripsi subkategori 2.1"},
-        {"category_id": 2, "category_name": "Kategori Jasa 2", "name": "Subkategori Jasa 2.2", "description": "Deskripsi subkategori 2.2"},
-        {"category_id": 3, "category_name": "Kategori Jasa 3", "name": "Subkategori Jasa 3.1", "description": "Deskripsi subkategori 3.1"},
-        {"category_id": 3, "category_name": "Kategori Jasa 3", "name": "Subkategori Jasa 3.2", "description": "Deskripsi subkategori 3.2"},
-    ]
 
-    return render(request, 'homepage.html', {'categories': categories, 'subcategories': subcategories, 'user_role': DUMMY_USER['role']})
+    #query kategori
+    query_str = f"""
+    select * from kategori_jasa
+    """
+    categories = query(query_str)
+
+    #query subkategori
+    query_str = f"""
+    select * from subkategori_jasa
+    """
+    subcategories = query(query_str)
+
+    #query user
+
+    context={
+        'categories': categories,
+        'subcategories': subcategories,
+        'user_role': DUMMY_USER['role'],
+    }
+    return render(request, 'homepage.html', context)
 
 
 from django.shortcuts import render
