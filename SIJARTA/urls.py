@@ -24,4 +24,5 @@ urlpatterns = [
     path('', include('landing_page.urls')),
     path('mypay/', include('merah.urls')),
     path('biru/', include('biru.urls')),
+    path('test', include('testquery.urls')),
 ]

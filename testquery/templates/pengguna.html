@@ -1,0 +1,10 @@
+{% if list_pengguna %}
+{% for pengguna in list_pengguna %}
+<!--list_pengguna berupa list yang berisi dict pengguna
+dic pengguna berisi key(atribut) dan value
+--><h3>{{ pengguna }}</h3> <!--akses key-->
+<br>
+{% endfor %}
+{% else %}
+<h1>hasil query kosong</h1>
+{% endif %}

@@ -16,50 +16,54 @@
                 <!-- Nama -->
                 <div style="display: flex; margin-bottom: 15px;">
                     <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Nama</div>
-                    <div>: {{ nama }}</div>
+                    <div>: {{ penggunalogin.nama }}</div>
                 </div>
 
                 <!-- Level -->
                 <div style="display: flex; margin-bottom: 15px;">
                     <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Level</div>
-                    <div>: Level {{ level }}</div>
+                    <div>: Level {{ penggunalogin.level }}</div>
                 </div>
 
                 <!-- Jenis Kelamin -->
                 <div style="display: flex; margin-bottom: 15px;">
                     <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Jenis Kelamin</div>
-                    <div>: {{ jenis_kelamin }}</div>
+                    <div>: {{ penggunalogin.jeniskelamin }}</div>
                 </div>
 
                 <!-- No HP -->
                 <div style="display: flex; margin-bottom: 15px;">
                     <div style="width: 150px; font-weight: bold; color: #2F4F4F;">No HP</div>
-                    <div>: {{ nohp }}</div>
+                    <div>: {{ penggunalogin.nohp }}</div>
                 </div>
 
                 <!-- Tanggal Lahir -->
                 <div style="display: flex; margin-bottom: 15px;">
                     <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Tanggal Lahir</div>
-                    <div>: {{ tanggal_lahir }}</div>
+                    <div>: {{ penggunalogin.tgllahir }}</div>
                 </div>
 
                 <!-- Alamat -->
                 <div style="display: flex; margin-bottom: 15px;">
                     <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Alamat</div>
-                    <div>: {{ alamat }}</div>
+                    <div>: {{ penggunalogin.alamat }}</div>
                 </div>
 
                 <!-- Saldo -->
                 <div style="display: flex; margin-bottom: 15px;">
                     <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Saldo</div>
-                    <div>: Rp {{ saldo }}</div>
+                    <div>: Rp {{ penggunalogin.saldomypay }}</div>
                 </div>
             </div>
 
-            <!-- Tombol Logout -->
-            <div style="text-align: center; margin-top: 10px;">
+            <!-- Tombol Update dan Logout -->
+           <div style="display: flex; gap: 10px; justify-content: center;">
+                <a href="{% url 'kuning:update_pengguna' %}"
+                style="background-color: #2F4F4F; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
+                Update
+                </a>
                 <a href="{% url 'kuning:logout' %}" 
-                   style="display: inline-block; background-color: #2F4F4F; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
+                style="background-color: #2F4F4F; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
                     Logout
                 </a>
             </div>
