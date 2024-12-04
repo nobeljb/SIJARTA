@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from datetime import datetime
 from django import forms
 from utils.query import query
@@ -97,6 +97,36 @@ def subcategory_detail(request, category_id, subcategory_nama):
         return render(request, 'subcategory_user.html', context)
     else:
         return render(request, 'subcategory_worker.html', context)
+
+def join_subcategory(request, subcategory_id, pekerja_id):
+    penggunalogin = request.session.get('penggunalogin')
+    #query subkategori
+    query_str = f"""
+    select * from subkategori_jasa
+    where id_subkategori_jasa = '{subcategory_id}'
+    """
+    subcategories = query(query_str)
+
+    query_str = f"""
+    insert into pekerja_kategori_jasa values(
+    '{pekerja_id}', '{subcategories[0]['kategorijasaid']}')
+    """
+    hasil = query(query_str)
+    
+    # Respons JSON
+    try:
+        # Operasi sukses
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Berhasil bergabung',
+            'pekerja_nama': penggunalogin['nama'],  # Gantilah ini sesuai dengan data yang benar
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e),
+        })
+    
 # Common dummy data
 
 workers = [

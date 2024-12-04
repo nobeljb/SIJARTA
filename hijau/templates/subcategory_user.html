@@ -16,7 +16,7 @@
             <li class="flex justify-between items-center">
                 <span>{{ session.sesi }}. Rp {{ session.harga }}</span>
                 <a href="{% url 'hijau:create_pemesanan' %}?session_name={{ session.name }}&session_price={{ session.price }}" 
-                   class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200">
+                   class="bg-[#2F4F4F] text-white px-4 py-2 rounded hover:bg-green-800 transition duration-200">
                     Pesan
                 </a>
             </li>
@@ -27,7 +27,7 @@
     <ul class="space-y-4 text-gray-700">
         {% for worker in workers %}
             <li>
-                <a href="" class="text-blue-600 hover:text-blue-800 font-medium">
+                <a href="" class="text-[#2F4F4F] hover:text-green-800 font-medium">
                     {{ worker.nama }}
                 </a>
             </li>

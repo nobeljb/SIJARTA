@@ -20,20 +20,24 @@
     </ul>
 
     <h2 class="text-2xl font-semibold text-gray-800 mb-6 mt-8">Daftar Pekerja</h2>
-    <ul class="space-y-4 text-gray-700">
+    <ul id="worker-list" class="space-y-4 text-gray-700">
         {% for worker in workers %}
             <li>
-                <a href="" class="text-blue-600 hover:text-blue-800 font-medium">
+                <a href="#" class="text-[#2F4F4F] hover:text-green-800 font-medium">
                     {{ worker.nama }}
                 </a>
             </li>
         {% endfor %}
         {% if not joined %}
-            <button onclick="alert('Anda telah bergabung dengan subkategori ini')" class="w-full sm:w-auto px-6 py-3 bg-[#2F4F4F] text-white font-semibold rounded-lg hover:bg-[#3b6363] transition duration-200">
+            <button 
+                id="join-button"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
+                onclick="joinSubcategory('{{ subcategory.id_subkategori_jasa }}', '{{ penggunalogin.id_user }}')">
                 Gabung ke Subkategori
             </button>
         {% endif %}
     </ul>
+
 
     <h2 class="text-2xl font-semibold text-gray-800 mb-6 mt-8">Testimoni</h2>
     <ul class="space-y-4 text-gray-700">
@@ -58,4 +62,61 @@
         {% endif %}
     </ul>
 </div>
+
+<script>
+    function joinSubcategory(subcategoryId, pekerjaId) {
+        const url = `/hijau/join-subcategory/${subcategoryId}/${pekerjaId}/`;
+
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Menampilkan pesan sukses dengan popup tema web
+                showPopup(data.message);
+
+                // Menambahkan nama pengguna ke daftar pekerja
+                const workerList = document.getElementById('worker-list');
+                const newWorker = document.createElement('li');
+                const workerLink = document.createElement('a');
+                workerLink.href = "#";
+                workerLink.textContent = data.pekerja_nama;
+                workerLink.className = "text-[#2F4F4F] hover:text-green-800 font-medium";
+                newWorker.appendChild(workerLink);
+                workerList.appendChild(newWorker);
+
+                // Menyembunyikan tombol Gabung
+                const joinButton = document.getElementById('join-button');
+                if (joinButton) {
+                    joinButton.style.display = 'none';
+                }
+            } else {
+                // Menampilkan pesan error dengan popup tema web
+                showPopup(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showPopup('Terjadi kesalahan. Coba lagi nanti.', 'error');
+        });
+    }
+
+    function showPopup(message, type = 'success') {
+        const popupContainer = document.createElement('div');
+        popupContainer.className = `fixed bottom-0 left-0 right-0 mt-8 px-4 py-2 bg-${type === 'success' ? 'green' : 'red'}-500 text-white text-center rounded-lg shadow-lg z-50`;
+        popupContainer.textContent = message;
+
+        // Tambahkan popup ke body
+        document.body.appendChild(popupContainer);
+
+        // Menghilangkan popup setelah beberapa detik
+        setTimeout(() => {
+            popupContainer.remove();
+        }, 3000);
+    }
+</script>
 {% endblock %}
