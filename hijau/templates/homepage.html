@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-    {% if user_role == 'Pekerja' %}
+    {% if penggunalogin.role == 'pekerja' %}
         {% include 'navbar_pekerja.html' %}
     {% else %}
         {% include 'navbar_pengguna.html' %}
@@ -46,12 +46,12 @@
                                 <li class="subcategory-item mb-4">
                                     <div class="flex justify-between items-center">
                                         <!-- Tampilkan tautan sesuai peran pengguna -->
-                                        {% if user_role == 'Pekerja' %}
-                                            <a href="" class="text-green-600 hover:text-green-800 font-medium">
+                                        {% if penggunalogin.role == 'pekerja' %}
+                                            <a href="{% url 'hijau:subcategory_detail_user' category.id_kategori_jasa subcategory.nama %}" class="text-#2F4F4F hover:text-green-800 font-medium">
                                                 {{ subcategory.nama }} - {{ subcategory.deskripsi }}
                                             </a>
                                         {% else %}
-                                            <a href="" class="text-blue-600 hover:text-blue-800 font-medium">
+                                            <a href="{% url 'hijau:subcategory_detail_user' category.id_kategori_jasa subcategory.nama %}" class="text-#2F4F4F hover:text-green-800 font-medium">
                                                 {{ subcategory.nama }} - {{ subcategory.deskripsi }}
                                             </a>
                                         {% endif %}

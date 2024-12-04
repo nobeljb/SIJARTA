@@ -6,6 +6,7 @@ def show_pengguna(request):
     #Buat query
     query_str = f"""
     select * from kategori_jasa
+    where id_kategori_jasa = '49847c0d-0fa7-4012-9c7e-6840f5454c13'
     """
     
     #Masukkan string query
