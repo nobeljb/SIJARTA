@@ -71,8 +71,8 @@ def subcategory_detail(request, category_id, subcategory_nama):
     #query testimoni
     query_str = f"""
     select pgn.nama
-    from sijarta.pekerja_kategori_jasa pkj
-    join sijarta.pengguna pgn on pgn.id_user = pkj.pekerjaid
+    from pekerja_kategori_jasa pkj
+    join pengguna pgn on pgn.id_user = pkj.pekerjaid
     where pkj.kategorijasaid ='{categories[0]['id_kategori_jasa']}';
     """
     workers = query(query_str)
@@ -126,7 +126,24 @@ def join_subcategory(request, subcategory_id, pekerja_id):
             'status': 'error',
             'message': str(e),
         })
+
+def worker_detail(request, worker_name):
+    penggunalogin = request.session.get('penggunalogin')
+    query_str = f"""
+    select * from pengguna
+    join pekerja on id_user = id_pekerja
+    where nama = '{worker_name}'
+    """
+    pekerja = query(query_str)
+
+    print(pekerja)
+
+    context = {
+        'pekerja': pekerja[0],
+        'penggunalogin': penggunalogin,
+    }
     
+    return render(request, "worker_detail.html", context)    
 # Common dummy data
 
 workers = [
@@ -143,20 +160,6 @@ worker_statuses = [
     {'user_id': 2, 'is_worker': False},
     {'user_id': 3, 'is_worker': True}
 ]
-
-def worker_detail(request, worker_id):
-    # Get the worker by ID (or 404 if not found)
-    worker = next((w for w in workers if w['id'] == worker_id), None)
-    if worker is None:
-        raise Http404("Pekerja tidak ditemukan")
-
-    # Pass worker details to the template
-    context = {
-        'worker': worker,
-        'user_role': DUMMY_USER['role']
-    }
-
-    return render(request, 'worker_detail.html', context)
 
 # Dummy form untuk pemesanan
 

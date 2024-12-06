@@ -27,7 +27,7 @@
     <ul class="space-y-4 text-gray-700">
         {% for worker in workers %}
             <li>
-                <a href="" class="text-[#2F4F4F] hover:text-green-800 font-medium">
+                <a href="{% url 'hijau:worker_detail' worker.nama %}" class="text-[#2F4F4F] hover:text-green-800 font-medium">
                     {{ worker.nama }}
                 </a>
             </li>

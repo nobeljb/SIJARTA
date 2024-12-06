@@ -23,7 +23,7 @@
     <ul id="worker-list" class="space-y-4 text-gray-700">
         {% for worker in workers %}
             <li>
-                <a href="#" class="text-[#2F4F4F] hover:text-green-800 font-medium">
+                <a href="{% url 'hijau:worker_detail' worker.nama %}" class="text-[#2F4F4F] hover:text-green-800 font-medium">
                     {{ worker.nama }}
                 </a>
             </li>
@@ -83,7 +83,7 @@
                 const workerList = document.getElementById('worker-list');
                 const newWorker = document.createElement('li');
                 const workerLink = document.createElement('a');
-                workerLink.href = "#";
+                workerLink.href = `/hijau/worker/${encodeURIComponent(data.pekerja_nama)}/`;
                 workerLink.textContent = data.pekerja_nama;
                 workerLink.className = "text-[#2F4F4F] hover:text-green-800 font-medium";
                 newWorker.appendChild(workerLink);
