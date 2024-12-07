@@ -9,14 +9,71 @@
 {% endblock navbar %}
 
 {% block content %}
-<div class="container mx-auto p-6 bg-white rounded-lg shadow-md mt-8 max-w-3xl">
-    <h1 class="text-3xl font-semibold text-gray-800 mb-4">{{ worker.name }}</h1>
-    <div class="space-y-4">
-        <p><strong class="text-gray-700">Rating:</strong> <span class="text-blue-500">{{ worker.rating }}</span></p>
-        <p><strong class="text-gray-700">Finished Jobs:</strong> {{ worker.finished_jobs }}</p>
-        <p><strong class="text-gray-700">Phone:</strong> {{ worker.phone_number }}</p>
-        <p><strong class="text-gray-700">Birthdate:</strong> {{ worker.birthdate|date:"d-m-Y" }}</p>
-        <p><strong class="text-gray-700">Address:</strong> {{ worker.address }}</p>
+<div style="display: flex; justify-content: center; padding: 40px 20px;">
+   <div style="width: 100%; max-width: 600px; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+       <h1 style="text-align: center; color: #2F4F4F; margin-bottom: 20px;">Profil Pekerja</h1>
+
+       <div style="display: flex; flex-direction: column; gap: 15px;">
+           <!-- Informasi Profil -->
+           <div style="border: 1px solid #ddd; border-radius: 4px; padding: 20px;">
+               <div style="display: flex;">
+                   <!-- Kolom Kiri - Informasi -->
+                   <div style="flex: 1;">
+                       <!-- Nama -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Nama</div>
+                           <div>: {{ pekerja.nama }}</div>
+                       </div>
+
+                       <!-- No HP -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">No HP</div>
+                           <div>: {{ pekerja.nohp }}</div>
+                       </div>
+
+                       <!-- Tanggal Lahir -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Tanggal Lahir</div>
+                           <div>: {{ pekerja.tgllahir }}</div>
+                       </div>
+
+                       <!-- Alamat -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Alamat</div>
+                           <div>: {{ pekerja.alamat }}</div>
+                       </div>
+
+                       <!-- Rating -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Rating</div>
+                           <div>: {{ pekerja.rating }}</div>
+                       </div>
+
+                       <!-- Jumlah Pesanan -->
+                       <div style="display: flex; margin-bottom: 15px;">
+                           <div style="width: 150px; font-weight: bold; color: #2F4F4F;">Jumlah Pesanan Selesai</div>
+                           <div>: {{ pekerja.jmlpesananselesai }}</div>
+                       </div>
+
+                    </div>
+
+                   <!-- Kolom Kanan - Foto -->
+                   <div style="margin-left: 20px;">
+                        <div style="width: 150px; height: 150px; border: 1px solid #ddd; border-radius: 4px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                            <img src="{{ pekerja.linkfoto }}" style="max-width: 100%; max-height: 100%; object-fit: cover;">
+                        </div>
+                    </div>
+               </div>
+           </div>
+        </div>
+        <!-- Tombol Kembali -->
+        <div style="text-align: right; margin-top: 20px;">
+            <button 
+                onclick="history.back()" 
+                style="padding: 10px 20px; background-color: #2F4F4F; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+                Kembali
+            </button>
+        </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
