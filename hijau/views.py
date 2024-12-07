@@ -1,6 +1,7 @@
+import uuid
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404, HttpResponse, JsonResponse
-from datetime import datetime
+from datetime import date, datetime
 from django import forms
 from utils.query import query
 
@@ -136,130 +137,160 @@ def worker_detail(request, worker_name):
     """
     pekerja = query(query_str)
 
-    print(pekerja)
-
     context = {
         'pekerja': pekerja[0],
         'penggunalogin': penggunalogin,
     }
     
-    return render(request, "worker_detail.html", context)    
-# Common dummy data
-
-workers = [
-    {'id': 1, 'name': 'John Doe', 'rating': 4.9, 'finished_jobs': 120, 'phone_number': '081234567890', 
-     'birthdate': datetime(1985, 5, 22), 'address': 'Jl. Merdeka No. 10, Jakarta'},
-    {'id': 2, 'name': 'Jane Smith', 'rating': 4.7, 'finished_jobs': 85, 'phone_number': '082345678901',
-     'birthdate': datetime(1990, 8, 14), 'address': 'Jl. Sudirman No. 15, Bandung'},
-    {'id': 3, 'name': 'Alex Johnson', 'rating': 4.8, 'finished_jobs': 102, 'phone_number': '083456789012',
-     'birthdate': datetime(1988, 11, 30), 'address': 'Jl. Gatot Subroto No. 25, Yogyakarta'}
-]
-
-worker_statuses = [
-    {'user_id': 1, 'is_worker': True},
-    {'user_id': 2, 'is_worker': False},
-    {'user_id': 3, 'is_worker': True}
-]
-
-# Dummy form untuk pemesanan
-
+    return render(request, "worker_detail.html", context)
 class PemesananForm(forms.Form):
-    tanggal_pemesanan = forms.DateField(
-        widget=forms.SelectDateWidget(attrs={
-            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4'
-        }),
-        initial=forms.fields.DateField,
-        label="Tanggal Pemesanan",
-    )
+    query_str = f"""
+    select * from metode_bayar
+    """
+    metode_pembayaran = query(query_str)
+
     diskon = forms.CharField(
         max_length=100, 
         required=False, 
         label="Diskon (Opsional)",
         widget=forms.TextInput(attrs={
-            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F59]',
             'placeholder': 'Masukkan kode diskon jika ada'
         })
     )
-    total_pembayaran = forms.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
-        initial=50000, 
-        required=False, 
-        label="Total Pembayaran",
-        widget=forms.NumberInput(attrs={
-            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500',
-            'readonly': 'readonly',
-            'value': '50000'
-        })
-    )
     metode_bayar = forms.ChoiceField(
-        choices=[
-            ('transfer', 'Transfer Bank'),
-            ('credit_card', 'Kartu Kredit'),
-            ('e-wallet', 'E-Wallet'),
-            ('cash', 'Bayar Tunai')
-        ],
+        choices=[(metode['id_metode_bayar'], metode['nama']) for metode in metode_pembayaran],
         label="Metode Pembayaran",
         widget=forms.Select(attrs={
-            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+            'class': 'w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F59]'
         })
     )
     
     # Optional: Button style for submit
     submit_button = forms.CharField(widget=forms.HiddenInput(), initial="Submit", required=False)
 
-def create_pemesanan(request):
+def create_pemesanan(request, subcategory_id, session, price):
+    penggunalogin = request.session.get('penggunalogin')
+    tanggal_pemesanan = date.today()
+    context = {
+        'tanggal_pemesanan': tanggal_pemesanan,
+        'harga': price,
+        'penggunalogin': penggunalogin,
+    }
     if request.method == 'POST':
         form = PemesananForm(request.POST)
         if form.is_valid():
-            # Logika untuk menghitung total pembayaran dengan diskon
-            diskon_code = form.cleaned_data['diskon']
-            total_pembayaran = form.cleaned_data['total_pembayaran']
-            if diskon_code == 'PROMO100':
-                total_pembayaran -= 10000  # Potongan diskon 10.000
+            # Ambil data dari form
+            diskon_code = form.cleaned_data.get('diskon', '')  # Default '' jika kosong
+            metode_bayar = form.cleaned_data['metode_bayar']
+            harga_akhir = float(price)  # Default harga adalah harga awal
+            berhasil_diskon = False
+            # Cek apakah kode diskon valid
+            if diskon_code:
+                query_diskon = f"""
+                SELECT * FROM diskon
+                WHERE kode_diskon = '{diskon_code}'"""
+                diskon_data = query(query_diskon)
+                
+                if diskon_data:
+                    diskon = diskon_data[0]  # Ambil data diskon pertama (jika ada)
+                    min_transaksi = float(diskon['mintrpemesanan'])
+                    potongan = float(diskon['potongan'])
+                    berhasil_diskon = True
+                    
+                    # Cek apakah harga memenuhi syarat minimum transaksi
+                    if float(price) >= min_transaksi:
+                        harga_akhir -= potongan  # Kurangi harga dengan potongan
+                    else:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f"Transaksi minimum untuk kode diskon ini adalah Rp {min_transaksi:,}.",
+                        })
+                else:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': "Kode diskon tidak valid.",
+                    })
 
-            # Lakukan pengolahan lainnya jika perlu, misalnya menyimpan data ke database
+            id_pemesanan = uuid.uuid4()
+            # Simpan pemesanan ke database
+            if(berhasil_diskon):
+                query_str = f"""
+                INSERT INTO tr_pemesanan_jasa 
+                (idkategorijasa, idpelanggan, id_tr_pemesanan_jasa, totalbiaya, tglpemesanan, idmetodebayar, sesi, iddiskon) 
+                VALUES 
+                ('{subcategory_id}', '{penggunalogin['id_user']}', '{id_pemesanan}', '{harga_akhir}', current_date, '{metode_bayar}', '{session}', '{diskon_code}')
+                """
+            else:
+                query_str = f"""
+                INSERT INTO tr_pemesanan_jasa 
+                (idkategorijasa, idpelanggan, id_tr_pemesanan_jasa, totalbiaya, tglpemesanan, idmetodebayar, sesi, iddiskon) 
+                VALUES 
+                ('{subcategory_id}', '{penggunalogin['id_user']}', '{id_pemesanan}', '{harga_akhir}', current_date, '{metode_bayar}', '{session}', null)
+                """
             
-            # Redirect ke halaman View Pemesanan Jasa
-            return redirect('view_pemesanan')
-    else:
-        form = PemesananForm()
+            query(query_str)
 
-    return render(request, 'create_pesanan.html', {'form': form, 'user_role': DUMMY_USER['role']})
+            query_pesanan = f"""
+                insert into tr_pemesanan_status values('{id_pemesanan}', '40bd17f1-779d-42e7-bcd3-26390d5b251c', current_date)
+                """
+            pesanan_data = query(query_pesanan)
 
+            # Kembalikan response JSON untuk debugging
+            response_data = {
+                'pesanan': pesanan_data,
+                'penggunalogin': penggunalogin,
+            }
+            return JsonResponse(response_data)
 
+    else:  # GET request, tampilkan form kosong
+        context['form'] = PemesananForm()
 
+    return render(request, 'create_pesanan.html', context)
+    
 def view_pemesanan(request):
-    # Dummy data pesanan
-    pesanan = [
-        {
-            'session_name': 'Layanan A',
-            'session_price': 150000,
-            'status': 'menunggu_pembayaran',
-            'testimoni': '',
-        },
-        {
-            'session_name': 'Layanan B',
-            'session_price': 200000,
-            'status': 'mencari_pekerja',
-            'testimoni': '',
-        },
-        {
-            'session_name': 'Layanan C',
-            'session_price': 250000,
-            'status': 'pesanan_selesai',
-            'testimoni': '',
-        },
-        {
-            'session_name': 'Layanan D',
-            'session_price': 300000,
-            'status': 'pesanan_selesai',
-            'testimoni': 'Testimoni sudah ada',
-        },
-    ]
+    penggunalogin = request.session.get('penggunalogin')
+    query_str = f"""
+    SELECT DISTINCT ON (pj.id_tr_pemesanan_jasa) 
+        pj.id_tr_pemesanan_jasa AS id_pemesanan,
+        sj.deskripsi AS session_name, 
+        pj.totalbiaya AS session_price, 
+        sp.status,
+        ps.tglwaktu
+    FROM sijarta.tr_pemesanan_jasa pj
+    JOIN sijarta.tr_pemesanan_status ps 
+        ON pj.id_tr_pemesanan_jasa = ps.idtrpemesanan
+    JOIN sijarta.subkategori_jasa sj 
+        ON sj.id_subkategori_jasa = pj.idkategorijasa
+    JOIN sijarta.status_pesanan sp 
+        ON sp.id_status_pesanan = ps.idstatus
+    WHERE pj.idpelanggan = 'a1c94b2b-fced-4988-a9b9-ec639436e88b'
+    ORDER BY 
+        pj.id_tr_pemesanan_jasa,  -- Mengelompokkan per pesanan
+        ps.tglwaktu DESC,         -- Ambil status terbaru berdasarkan waktu
+        CASE 
+            WHEN sp.status = 'Pesanan dibatalkan' THEN 1
+            WHEN sp.status = 'Pesanan selesai' THEN 2
+            WHEN sp.status = 'Pelayanan jasa sedang dilakukan' THEN 3
+            WHEN sp.status = 'Pekerja tiba di lokasi' THEN 4
+            WHEN sp.status = 'Menunggu Pekerja Berangkat' THEN 5
+            WHEN sp.status = 'Mencari Pekerja Terdekat' THEN 6
+            WHEN sp.status = 'Menunggu Pembayaran' THEN 7
+            ELSE 8 -- Default jika status tidak dikenal
+        END;
+    """
+    pesanan = query(query_str)
+    if pesanan:
+        for pesan in pesanan:
+            query_str = f"""
+            SELECT * FROM testimoni
+            WHERE idtrpemesanan = '{pesan['id_pemesanan']}'
+            """
+            testimoni = query(query_str)
+            pesan['testimoni'] = testimoni[0]['teks'] if testimoni else ''
     
     context = {
         'pesanan': pesanan,
-        'user_role': DUMMY_USER['role']
+        'penggunalogin': penggunalogin,
     }
     return render(request, 'view_pemesanan.html', context)

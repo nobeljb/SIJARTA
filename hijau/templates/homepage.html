@@ -16,7 +16,7 @@
         <!-- Filter Dropdown Kategori -->
         <div class="mb-6">
             <label for="category-dropdown" class="text-lg font-medium block mb-2">Pilih Kategori:</label>
-            <select id="category-dropdown" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="category-dropdown" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F59]">
                 <option value="">Pilih Kategori</option>
                 {% for category in categories %}
                     <option value="{{ category.id_kategori_jasa }}">{{ category.namakategori }}</option>
@@ -27,12 +27,12 @@
         <!-- Search Bar for Subcategories -->
         <div class="mb-6">
             <label for="subcategory-search" class="text-lg font-medium block mb-2">Cari Subkategori:</label>
-            <input type="text" id="subcategory-search" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Cari subkategori...">
+            <input type="text" id="subcategory-search" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F59]" placeholder="Cari subkategori...">
         </div>
 
         <!-- Search Button -->
         <div class="mb-6 text-center">
-            <button id="search-button" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200">Cari</button>
+            <button id="search-button" class="w-full sm:w-auto px-6 py-3 bg-[#2C5F59] text-white font-semibold rounded-lg transition duration-200">Cari</button>
         </div>
 
         <!-- Daftar Subkategori per Kategori -->

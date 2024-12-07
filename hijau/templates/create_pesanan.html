@@ -1,11 +1,7 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-    {% if user_role == 'Pekerja' %}
-        {% include 'navbar_pekerja.html' %}
-    {% else %}
-        {% include 'navbar_pengguna.html' %}
-    {% endif %}
+    {% include 'navbar_pengguna.html' %}
 {% endblock navbar %}
 
 {% block content %}
@@ -14,16 +10,15 @@
     <form method="post">
         {% csrf_token %}
 
-        <!-- Tanggal Pemesanan -->
-        <div>
-            <label for="id_tanggal_pemesanan" class="text-lg font-medium block mb-2">Tanggal Pemesanan</label>
-            <div class="relative">
-                {{ form.tanggal_pemesanan }}
+        <!-- Tanggal Pemesanan (Menampilkan tanggal dalam format angka) -->
+        <div class="mb-6">
+            <label class="text-lg font-medium block mb-2">Tanggal Pemesanan</label>
+            <div class="relative bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-800">
+                {{ tanggal_pemesanan|date:"d/m/Y" }}  <!-- Menampilkan tanggal dalam format angka -->
             </div>
         </div>
 
-
-        <!-- Kode Diskn -->
+        <!-- Kode Diskon -->
         <div class="mb-6">
             <label for="id_diskon" class="text-lg font-medium block mb-2">Kode Promo</label>
             <div class="relative">
@@ -31,11 +26,11 @@
             </div>
         </div>
 
-        <!-- Total Pembayaran -->
+        <!-- Total Pembayaran (Readonly Text) -->
         <div class="mb-6">
-            <label for="id_total_pembayaran" class="text-lg font-medium block mb-2">Total Pembayaran</label>
-            <div class="relative">
-                {{ form.total_pembayaran }}
+            <label class="text-lg font-medium block mb-2">Total Pembayaran</label>
+            <div class="relative bg-yellow-100 border border-yellow-300 rounded-lg p-3 text-gray-800 font-semibold">
+                Rp {{ harga }}
             </div>
         </div>
 
@@ -49,7 +44,7 @@
 
         <!-- Submit Button -->
         <div class="mt-8 text-center">
-            <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition duration-200">
+            <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-[#2C5F59] text-white font-semibold rounded-lg hover:bg-green-800 transition duration-200">
                 Submit
             </button>
         </div>

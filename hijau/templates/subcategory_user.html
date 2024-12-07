@@ -15,8 +15,8 @@
         {% for session in sessions %}
             <li class="flex justify-between items-center">
                 <span>{{ session.sesi }}. Rp {{ session.harga }}</span>
-                <a href="{% url 'hijau:create_pemesanan' %}?session_name={{ session.name }}&session_price={{ session.price }}" 
-                   class="bg-[#2F4F4F] text-white px-4 py-2 rounded hover:bg-green-800 transition duration-200">
+                <a href="{% url 'hijau:create_pemesanan' session.id_subkategori session.sesi session.harga %}" 
+                   class="bg-[#2F4F4F] text-white px-4 py-2 rounded transition duration-200">
                     Pesan
                 </a>
             </li>
