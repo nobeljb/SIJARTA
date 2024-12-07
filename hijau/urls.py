@@ -10,4 +10,5 @@ urlpatterns = [
     path('worker/<str:worker_name>/', views.worker_detail, name='worker_detail'),
     path('create-pemesanan/<str:subcategory_id>/<str:session>/<str:price>', views.create_pemesanan, name='create_pemesanan'),
     path('view-pemesanan/', views.view_pemesanan, name='view_pemesanan'),
+    path('batal-pemesanan/<str:id_pemesanan>/', views.batal_pemesanan, name='batal_pemesanan'),
 ]

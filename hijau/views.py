@@ -231,17 +231,12 @@ def create_pemesanan(request, subcategory_id, session, price):
             
             query(query_str)
 
-            query_pesanan = f"""
+            query_str = f"""
                 insert into tr_pemesanan_status values('{id_pemesanan}', '40bd17f1-779d-42e7-bcd3-26390d5b251c', current_date)
                 """
-            pesanan_data = query(query_pesanan)
+            query(query_str)
 
-            # Kembalikan response JSON untuk debugging
-            response_data = {
-                'pesanan': pesanan_data,
-                'penggunalogin': penggunalogin,
-            }
-            return JsonResponse(response_data)
+            return redirect('hijau:view_pemesanan')
 
     else:  # GET request, tampilkan form kosong
         context['form'] = PemesananForm()
@@ -264,7 +259,7 @@ def view_pemesanan(request):
         ON sj.id_subkategori_jasa = pj.idkategorijasa
     JOIN sijarta.status_pesanan sp 
         ON sp.id_status_pesanan = ps.idstatus
-    WHERE pj.idpelanggan = 'a1c94b2b-fced-4988-a9b9-ec639436e88b'
+    WHERE pj.idpelanggan = '{penggunalogin['id_user']}'
     ORDER BY 
         pj.id_tr_pemesanan_jasa,  -- Mengelompokkan per pesanan
         ps.tglwaktu DESC,         -- Ambil status terbaru berdasarkan waktu
@@ -294,3 +289,10 @@ def view_pemesanan(request):
         'penggunalogin': penggunalogin,
     }
     return render(request, 'view_pemesanan.html', context)
+
+def batal_pemesanan(request, id_pemesanan):
+    query_str = f"""
+    insert into tr_pemesanan_status values('{id_pemesanan}', '506bb50a-5943-4eb7-a48c-00334aeba847', current_date)
+    """
+    query(query_str)
+    return redirect('hijau:view_pemesanan')
