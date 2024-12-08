@@ -236,9 +236,14 @@ def create_pemesanan(request, subcategory_id, session, price):
             
             query(query_str)
 
-            query_str = f"""
-                insert into tr_pemesanan_status values('{id_pemesanan}', '40bd17f1-779d-42e7-bcd3-26390d5b251c', current_date)
-                """
+            if metode_bayar == 'ab9aab5e-5706-4c35-8099-765b7f41a925':
+                query_str = f"""
+                    insert into tr_pemesanan_status values('{id_pemesanan}', '40bd17f1-779d-42e7-bcd3-26390d5b251c', current_date)
+                    """
+            else:
+                query_str = f"""
+                    insert into tr_pemesanan_status values('{id_pemesanan}', '2dd8907b-bb4e-4dd2-a6ce-613a63255391', current_date)
+                    """
             query(query_str)
 
             return JsonResponse({'success': True, 'message': 'Pemesanan berhasil dibuat.'})
