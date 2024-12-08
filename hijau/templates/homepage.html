@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-    {% if user_role == 'Pekerja' %}
+    {% if penggunalogin.role == 'pekerja' %}
         {% include 'navbar_pekerja.html' %}
     {% else %}
         {% include 'navbar_pengguna.html' %}
@@ -16,10 +16,10 @@
         <!-- Filter Dropdown Kategori -->
         <div class="mb-6">
             <label for="category-dropdown" class="text-lg font-medium block mb-2">Pilih Kategori:</label>
-            <select id="category-dropdown" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="category-dropdown" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F59]">
                 <option value="">Pilih Kategori</option>
                 {% for category in categories %}
-                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    <option value="{{ category.id_kategori_jasa }}">{{ category.namakategori }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -27,32 +27,32 @@
         <!-- Search Bar for Subcategories -->
         <div class="mb-6">
             <label for="subcategory-search" class="text-lg font-medium block mb-2">Cari Subkategori:</label>
-            <input type="text" id="subcategory-search" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Cari subkategori...">
+            <input type="text" id="subcategory-search" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F59]" placeholder="Cari subkategori...">
         </div>
 
         <!-- Search Button -->
         <div class="mb-6 text-center">
-            <button id="search-button" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200">Cari</button>
+            <button id="search-button" class="w-full sm:w-auto px-6 py-3 bg-[#2C5F59] text-white font-semibold rounded-lg transition duration-200">Cari</button>
         </div>
 
         <!-- Daftar Subkategori per Kategori -->
         <div id="subcategory-list">
             {% for category in categories %}
-                <div id="category-{{ category.id }}" class="subcategory-category mb-6">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">{{ category.name }}</h2>
+                <div id="category-{{ category.id_kategori_jasa }}" class="subcategory-category mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">{{ category.namakategori }}</h2>
                     <ul>
                         {% for subcategory in subcategories %}
-                            {% if subcategory.category_id == category.id %}
+                            {% if subcategory.kategorijasaid == category.id_kategori_jasa %}
                                 <li class="subcategory-item mb-4">
                                     <div class="flex justify-between items-center">
                                         <!-- Tampilkan tautan sesuai peran pengguna -->
-                                        {% if user_role == 'Pekerja' %}
-                                            <a href="{% url 'hijau:subcategory_detail_worker' category.id subcategory.name %}" class="text-green-600 hover:text-green-800 font-medium">
-                                                {{ subcategory.name }} - {{ subcategory.description }}
+                                        {% if penggunalogin.role == 'pekerja' %}
+                                            <a href="{% url 'hijau:subcategory_detail_user' category.id_kategori_jasa subcategory.nama %}" class="text-#2F4F4F hover:text-green-800 font-medium">
+                                                {{ subcategory.nama }} - {{ subcategory.deskripsi }}
                                             </a>
                                         {% else %}
-                                            <a href="{% url 'hijau:subcategory_detail_user' category.id subcategory.name %}" class="text-blue-600 hover:text-blue-800 font-medium">
-                                                {{ subcategory.name }} - {{ subcategory.description }}
+                                            <a href="{% url 'hijau:subcategory_detail_user' category.id_kategori_jasa subcategory.nama %}" class="text-#2F4F4F hover:text-green-800 font-medium">
+                                                {{ subcategory.nama }} - {{ subcategory.deskripsi }}
                                             </a>
                                         {% endif %}
                                     </div>
@@ -100,8 +100,8 @@
             var categoryHasVisibleSubcategory = false;
 
             subcategoryItems.forEach(function(item) {
-                var subcategoryName = item.querySelector('a').textContent.toLowerCase();
-                if (subcategoryName.includes(searchTerm)) {
+                var subcategorynama = item.querySelector('a').textContent.toLowerCase();
+                if (subcategorynama.includes(searchTerm)) {
                     item.style.display = 'block';
                     categoryHasVisibleSubcategory = true;
                 } else {

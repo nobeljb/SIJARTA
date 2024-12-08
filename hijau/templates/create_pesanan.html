@@ -1,29 +1,24 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-    {% if user_role == 'Pekerja' %}
-        {% include 'navbar_pekerja.html' %}
-    {% else %}
-        {% include 'navbar_pengguna.html' %}
-    {% endif %}
+    {% include 'navbar_pengguna.html' %}
 {% endblock navbar %}
 
 {% block content %}
 <div class="container mx-auto p-6 bg-white rounded-lg shadow-lg mt-8 max-w-xl">
     <h2 class="text-3xl font-semibold text-gray-800 mb-6 text-center">Formulir Pemesanan Jasa</h2>
-    <form method="post">
+    <form id="pemesananForm" method="post">
         {% csrf_token %}
 
         <!-- Tanggal Pemesanan -->
-        <div>
-            <label for="id_tanggal_pemesanan" class="text-lg font-medium block mb-2">Tanggal Pemesanan</label>
-            <div class="relative">
-                {{ form.tanggal_pemesanan }}
+        <div class="mb-6">
+            <label class="text-lg font-medium block mb-2">Tanggal Pemesanan</label>
+            <div class="relative bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-800">
+                {{ tanggal_pemesanan|date:"d/m/Y" }}
             </div>
         </div>
 
-
-        <!-- Kode Diskn -->
+        <!-- Kode Diskon -->
         <div class="mb-6">
             <label for="id_diskon" class="text-lg font-medium block mb-2">Kode Promo</label>
             <div class="relative">
@@ -33,9 +28,9 @@
 
         <!-- Total Pembayaran -->
         <div class="mb-6">
-            <label for="id_total_pembayaran" class="text-lg font-medium block mb-2">Total Pembayaran</label>
-            <div class="relative">
-                {{ form.total_pembayaran }}
+            <label class="text-lg font-medium block mb-2">Total Pembayaran</label>
+            <div class="relative bg-yellow-100 border border-yellow-300 rounded-lg p-3 text-gray-800 font-semibold">
+                Rp {{ harga }}
             </div>
         </div>
 
@@ -47,12 +42,48 @@
             </div>
         </div>
 
+        <!-- Div untuk Pesan Error -->
+        <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <span id="errorText"></span>
+        </div>
+
         <!-- Submit Button -->
         <div class="mt-8 text-center">
-            <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition duration-200">
+            <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-[#2C5F59] text-white font-semibold rounded-lg hover:bg-green-800 transition duration-200">
                 Submit
             </button>
         </div>
     </form>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#pemesananForm').on('submit', function (e) {
+            e.preventDefault(); // Cegah form agar tidak refresh halaman
+
+            $.ajax({
+                type: 'POST',
+                url: '', // Form dikirim ke URL yang sama
+                data: $(this).serialize(), // Serialisasi data form
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        // Jika sukses, redirect atau tampilkan pesan sukses
+                        window.location.href = '/hijau/view-pemesanan'; // Ganti dengan URL tujuan
+                    } else {
+                        // Tampilkan pesan error
+                        $('#errorMessage').removeClass('hidden'); // Tampilkan div pesan error
+                        $('#errorText').text(response.message); // Masukkan pesan error
+                    }
+                },
+                error: function () {
+                    // Tampilkan pesan error jika AJAX gagal
+                    $('#errorMessage').removeClass('hidden');
+                    $('#errorText').text('Terjadi kesalahan saat memproses data.');
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
