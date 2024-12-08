@@ -69,24 +69,41 @@
 </div>
 
 <script>
+// In pekerja_jasa.html
 document.addEventListener('DOMContentLoaded', function() {
     const kategoriSelect = document.getElementById('kategori');
     const subkategoriSelect = document.getElementById('subkategori');
-    const subcategories = {{ subcategories|safe }};
     
+    // Add change handlers
     kategoriSelect.addEventListener('change', function() {
         const selectedCategory = this.value;
-        subkategoriSelect.innerHTML = '<option value="">Subkategori</option>';
+        updateSubcategories(selectedCategory);
+        filterJobs();
+    });
+    
+    subkategoriSelect.addEventListener('change', function() {
+        filterJobs();
+    });
+    
+    function updateSubcategories(category) {
+        subkategoriSelect.innerHTML = '<option value="">Semua Subkategori</option>';
         
-        if (selectedCategory && subcategories[selectedCategory]) {
-            subcategories[selectedCategory].forEach(sub => {
+        if (category && categories[category]) {
+            categories[category].forEach(sub => {
                 const option = document.createElement('option');
                 option.value = sub;
                 option.textContent = sub;
                 subkategoriSelect.appendChild(option);
             });
         }
-    });
+    }
+    
+    function filterJobs() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('category', kategoriSelect.value);
+        params.set('subcategory', subkategoriSelect.value);
+        window.location.search = params.toString();
+    }
 });
 
 function takeJob(jobId) {

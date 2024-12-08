@@ -143,43 +143,65 @@ DUMMY_JOB_ORDERS = [
 
 ]
 
+# views.py
+
 def pekerja_jasa(request):
-    """
-    View for displaying available job orders for workers
-    """
-    # Get worker's category (dummy)
-    worker_category = ['Home Cleaning', 'Home Cook']
+    penggunalogin = request.session.get('penggunalogin')
     
-    # Filter jobs based on worker's category
-    available_jobs = [
-    {
-        'id': 1,
-        'kategori': 'Home Cleaning',
-        'subkategori': 'Regular Cleaning',
-        'status': 'Mencari Pekerja Terdekat',
-        'alamat': 'Jl. Kebon Jeruk No. 15',
-        'tanggal': '2024-03-20',
-        'waktu': '09:00',
-        'harga': 'Rp 150.000',
-    },
-    {
-        'id': 2,
-        'kategori': 'Home Cleaning',
-        'subkategori': 'Regular Cleaning',
-        'status': 'Mencari Pekerja Terdekat',
-        'alamat': 'Jl. Sudirman No. 100',
-        'tanggal': '2024-03-21',
-        'waktu': '13:00',
-        'harga': 'Rp 300.000',
-    },]
+    # Get selected filters
+    selected_category = request.GET.get('category', '')
+    selected_subcategory = request.GET.get('subcategory', '')
+
+    # Get worker's categories
+    query_str = f"""
+    SELECT kj.nama as kategori, sj.nama as subkategori
+    FROM pekerja_kategori_jasa pkj
+    JOIN subkategori_jasa sj ON pkj.idkategorijasa = sj.id_subkategori_jasa 
+    JOIN kategori_jasa kj ON sj.kategoriid = kj.id_kategori_jasa
+    WHERE pkj.pekerjaid = '{penggunalogin['id_user']}';
+    """
+    categories_raw = query(query_str)
     
+    # Structure categories and subcategories
+    categories = {}
+    for cat in categories_raw:
+        if cat['kategori'] not in categories:
+            categories[cat['kategori']] = []
+        categories[cat['kategori']].append(cat['subkategori'])
+
+    # Build jobs query with filters
+    base_query = """
+    SELECT tj.*, sj.nama as subkategori, kj.nama as kategori 
+    FROM tr_pemesanan_jasa tj
+    INNER JOIN subkategori_jasa sj ON tj.idkategorijasa = sj.id_subkategori_jasa
+    INNER JOIN kategori_jasa kj ON sj.kategoriid = kj.id_kategori_jasa
+    WHERE tj.id_tr_pemesanan_jasa IN (
+        SELECT idtrpemesanan FROM tr_pemesanan_status 
+        WHERE idstatus = '40bd17f1-779d-42e7-bcd3-26390d5b251c'
+    )
+    """
+    
+    filters = []
+    if selected_category:
+        filters.append(f"kj.nama = '{selected_category}'")
+    if selected_subcategory:
+        filters.append(f"sj.nama = '{selected_subcategory}'")
+    
+    if filters:
+        base_query += " AND " + " AND ".join(filters)
+        
+    jobs = query(base_query)
+
     context = {
-        'categories': DUMMY_JOB_CATEGORIES,
-        'subcategories': DUMMY_SUBCATEGORIES,
-        'jobs': available_jobs,
-        'worker_category': worker_category,
+        'jobs': jobs,
+        'categories': categories,
+        'selected_category': selected_category,
+        'selected_subcategory': selected_subcategory
     }
+    
     return render(request, 'pekerja_jasa.html', context)
+
+    
 
 def show_mypay(request):
     """
