@@ -48,8 +48,8 @@
                 {% for transaction in transactions %}
                 <div class="grid grid-cols-3 p-4 border-b hover:bg-gray-50">
                     <div class="text-primary">Rp {{ transaction.nominal }}</div>
-                    <div class="text-black">{{ transaction.tanggal }}</div>
-                    <div class="text-black">{{ transaction.kategori }}</div>
+                    <div class="text-black">{{ transaction.tgl }}</div>
+                    <div class="text-black">{{ transaction.nama}}</div>
                 </div>
                 {% empty %}
                 <div class="p-4 text-center text-black">

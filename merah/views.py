@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from datetime import datetime, timedelta
 from decimal import Decimal
+from utils.query import query
 
 # Dummy data - in real implementation, this would come from SQL server
 DUMMY_USER = {
@@ -183,14 +184,27 @@ def show_mypay(request):
     View for MyPay dashboard displaying user balance and transaction history
     Currently using dummy data, will be replaced with SQL server data later
     """
-    paginator = Paginator(DUMMY_TRANSACTIONS, 5)
+
+    penggunalogin = request.session.get('penggunalogin')
+
+    query_str = f""" 
+    SELECT * 
+    FROM TR_MYPAY TR 
+    INNER JOIN KATEGORI_TR_MYPAY K 
+    ON TR.kategoriid = K.id_kategori_tr_mypay
+    WHERE userid = '{penggunalogin['id_user']}';
+    """
+    q_transasction = query(query_str)
+    paginator = Paginator(q_transasction, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
     context = {
-        'phone_number': DUMMY_USER['phone_number'],
-        'balance': DUMMY_USER['balance'],
+        'penggunalogin': penggunalogin,
+        'phone_number': penggunalogin['nohp'],
+        'balance': penggunalogin['saldomypay'],
         'transactions': page_obj,
-        'user_role': DUMMY_USER['role'],
+        'user_role': penggunalogin['role'],
     }
     return render(request, 'dashboard.html', context)
 
@@ -198,12 +212,34 @@ def transaksi_mypay(request):
     """
     View trcansaction 
     """
+    penggunalogin = request.session.get('penggunalogin')
+
+    jasa_query_str = f"""
+    SELECT su.nama, tj.totalbiaya
+    FROM tr_pemesanan_jasa tj
+
+    INNER JOIN SUBKATEGORI_JASA SU
+    ON tj.idkategorijasa = SU.id_subkategori_jasa
+
+    WHERE tj.id_tr_pemesanan_jasa IN (
+    SELECT ts.idtrpemesanan
+    FROM tr_pemesanan_status ts
+    GROUP BY ts.idtrpemesanan
+    HAVING COUNT(*) = 1 AND bool_and(ts.idstatus = '40bd17f1-779d-42e7-bcd3-26390d5b251c')
+    ) AND 
+    tj.idpelanggan = '{penggunalogin['id_user']}'
+    ;
+    """
+    jasa_dipesan = query(jasa_query_str)
+    print(jasa_dipesan)
+
     context = {
-        'phone_number': DUMMY_USER['phone_number'],
-        'balance': DUMMY_USER['balance'],
-        'transactions': DUMMY_TRANSACTIONS,
-        'user_role': DUMMY_USER['role'],
+        'penggunalogin': penggunalogin,
+        'user_role': penggunalogin['role'],
+        'list_jasa': jasa_dipesan
     }
+
+    # print(context['user_role'])
     return render(request, 'transaksi_mypay.html', context)
 
 
