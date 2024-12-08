@@ -146,63 +146,115 @@ DUMMY_JOB_ORDERS = [
 # views.py
 
 def pekerja_jasa(request):
+    """View for workers to see and accept available jobs"""
     penggunalogin = request.session.get('penggunalogin')
     
-    # Get selected filters
-    selected_category = request.GET.get('category', '')
-    selected_subcategory = request.GET.get('subcategory', '')
+    if not penggunalogin or penggunalogin.get('role') != 'pekerja':
+        messages.error(request, 'Anda harus login sebagai pekerja')
+        return redirect('merah:login')
 
-    # Get worker's categories
     query_str = f"""
-    SELECT kj.nama as kategori, sj.nama as subkategori
-    FROM pekerja_kategori_jasa pkj
-    JOIN subkategori_jasa sj ON pkj.idkategorijasa = sj.id_subkategori_jasa 
-    JOIN kategori_jasa kj ON sj.kategoriid = kj.id_kategori_jasa
-    WHERE pkj.pekerjaid = '{penggunalogin['id_user']}';
+    SELECT kj.id_kategori_jasa, kj.namakategori 
+    FROM KATEGORI_JASA kj
+    INNER JOIN PEKERJA_KATEGORI_JASA pkj 
+    ON kj.id_kategori_jasa = pkj.kategorijasaid
+    WHERE pkj.pekerjaid = '{penggunalogin['id_user']}'
     """
-    categories_raw = query(query_str)
-    
-    # Structure categories and subcategories
-    categories = {}
-    for cat in categories_raw:
-        if cat['kategori'] not in categories:
-            categories[cat['kategori']] = []
-        categories[cat['kategori']].append(cat['subkategori'])
+    categories = query(query_str)
 
-    # Build jobs query with filters
-    base_query = """
-    SELECT tj.*, sj.nama as subkategori, kj.nama as kategori 
-    FROM tr_pemesanan_jasa tj
-    INNER JOIN subkategori_jasa sj ON tj.idkategorijasa = sj.id_subkategori_jasa
-    INNER JOIN kategori_jasa kj ON sj.kategoriid = kj.id_kategori_jasa
-    WHERE tj.id_tr_pemesanan_jasa IN (
-        SELECT idtrpemesanan FROM tr_pemesanan_status 
-        WHERE idstatus = '40bd17f1-779d-42e7-bcd3-26390d5b251c'
+    # Get filter parameters
+    category_filter = request.GET.get('category', '')
+    subcategory_filter = request.GET.get('subcategory', '')
+
+    # Get subcategories for the worker's categories
+    query_str = f"""
+    SELECT sj.id_subkategori_jasa, sj.nama, sj.kategorijasaid
+    FROM SUBKATEGORI_JASA sj
+    INNER JOIN KATEGORI_JASA kj ON sj.kategorijasaid = kj.id_kategori_jasa
+    WHERE kj.id_kategori_jasa IN (
+        SELECT kategorijasaid FROM PEKERJA_KATEGORI_JASA 
+        WHERE pekerjaid = '{penggunalogin['id_user']}'
     )
     """
-    
-    filters = []
-    if selected_category:
-        filters.append(f"kj.nama = '{selected_category}'")
-    if selected_subcategory:
-        filters.append(f"sj.nama = '{selected_subcategory}'")
-    
-    if filters:
-        base_query += " AND " + " AND ".join(filters)
-        
+    subcategories = query(query_str)
+
+    # Modified query to get available jobs
+    base_query = f"""
+    SELECT 
+        tj.id_tr_pemesanan_jasa,
+        kj.namakategori as kategori,
+        sj.nama as subkategori,
+        tj.tglpemesanan,
+        tj.totalbiaya,
+        p.alamat,
+        sl.sesi,
+        sp.status as status_pesanan
+    FROM TR_PEMESANAN_JASA tj
+    INNER JOIN SUBKATEGORI_JASA sj ON tj.idkategorijasa = sj.id_subkategori_jasa
+    INNER JOIN KATEGORI_JASA kj ON sj.kategorijasaid = kj.id_kategori_jasa
+    INNER JOIN PENGGUNA p ON tj.idpelanggan = p.id_user
+    INNER JOIN SESI_LAYANAN sl ON tj.idkategorijasa = sl.id_subkategori AND tj.sesi = sl.sesi
+    INNER JOIN (
+        SELECT idtrpemesanan, idstatus
+        FROM tr_pemesanan_status
+        WHERE (idtrpemesanan, tglwaktu) IN (
+            SELECT idtrpemesanan, MAX(tglwaktu)
+            FROM tr_pemesanan_status
+            GROUP BY idtrpemesanan
+        )
+    ) ts ON tj.id_tr_pemesanan_jasa = ts.idtrpemesanan
+    INNER JOIN STATUS_PESANAN sp ON ts.idstatus = sp.id_status_pesanan
+    WHERE tj.idpekerja IS NULL
+    AND sp.id_status_pesanan = '2dd8907b-bb4e-4dd2-a6ce-613a63255391'
+    AND kj.id_kategori_jasa IN (
+        SELECT kategorijasaid FROM PEKERJA_KATEGORI_JASA 
+        WHERE pekerjaid = '{penggunalogin['id_user']}'
+    )
+    """
+
+    # Apply filters if selected
+    if category_filter:
+        base_query += f" AND kj.id_kategori_jasa = '{category_filter}'"
+    if subcategory_filter:
+        base_query += f" AND sj.id_subkategori_jasa = '{subcategory_filter}'"
+
     jobs = query(base_query)
 
+    # Handle job acceptance
+    if request.method == 'POST':
+        job_id = request.POST.get('job_id')
+        if job_id:
+            # Insert new status
+            status_query = f"""
+            INSERT INTO TR_PEMESANAN_STATUS (idtrpemesanan, idstatus, tglwaktu)
+            VALUES ('{job_id}', 'ff584044-c977-4424-a57a-c2db0eb360b8', NOW())
+            """
+            query(status_query)
+
+            # Update job with worker info and dates
+            update_query = f"""
+            UPDATE TR_PEMESANAN_JASA
+            SET idpekerja = '{penggunalogin['id_user']}',
+                tglpekerjaan = CURRENT_DATE,
+                waktupekerjaan = CURRENT_DATE + interval '1 day' * sesi
+            WHERE id_tr_pemesanan_jasa = '{job_id}'
+            """
+            query(update_query)
+            
+            messages.success(request, 'Pesanan berhasil diambil')
+            return redirect('merah:pekerja_jasa')
+
     context = {
-        'jobs': jobs,
+        'penggunalogin': penggunalogin,
         'categories': categories,
-        'selected_category': selected_category,
-        'selected_subcategory': selected_subcategory
+        'subcategories': subcategories,
+        'jobs': jobs,
+        'selected_category': category_filter,
+        'selected_subcategory': subcategory_filter
     }
-    
+
     return render(request, 'pekerja_jasa.html', context)
-
     
-
 def show_mypay(request):
     """
     View for MyPay dashboard displaying user balance and transaction history
@@ -306,7 +358,7 @@ def transaksi_mypay(request):
                 """
                 hasil_status = query(query_str)
 
-                # return redirect('mypay:transaksi_mypay')
+                # return redirect('merah:transaksi_mypay')
 
             elif selected_state == 'TopUp':
                 nominal_topup = request.POST.get('nominal_topup')
@@ -346,7 +398,7 @@ def transaksi_mypay(request):
                 print(update_saldo)
                 penggunalogin['saldomypay'] = update_saldo[0]['saldomypay']
 
-                # return redirect('mypay:transaksi_mypay')
+                # return redirect('merah:transaksi_mypay')
 
             elif selected_state == 'Transfer':
                 no_hp_tujuan = request.POST.get('no_hp_tujuan')
@@ -354,7 +406,7 @@ def transaksi_mypay(request):
 
                 if not no_hp_tujuan or not nominal_transfer:
                     messages.error(request, 'Nomor HP tujuan dan nominal transfer harus diisi.')
-                    return redirect('mypay:transaksi_mypay')
+                    return redirect('merah:transaksi_mypay')
 
                 try:
                     nominal_transfer = Decimal(nominal_transfer)
@@ -362,13 +414,13 @@ def transaksi_mypay(request):
                         raise ValueError
                 except:
                     messages.error(request, 'Nominal transfer tidak valid.')
-                    return redirect('mypay:transaksi_mypay')
+                    return redirect('merah:transaksi_mypay')
 
                 # Check if sender has sufficient balance
                 current_balance = Decimal(str(penggunalogin['saldomypay']))
                 if current_balance < nominal_transfer:
                     messages.error(request, 'Saldo tidak mencukupi untuk melakukan transfer.')
-                    return redirect('mypay:transaksi_mypay')
+                    return redirect('merah:transaksi_mypay')
 
                 # Check if recipient exists
                 query_str = f"""
@@ -378,7 +430,7 @@ def transaksi_mypay(request):
 
                 if not recipient:
                     messages.error(request, 'Nomor HP tujuan tidak ditemukan.')
-                    return redirect('mypay:transaksi_mypay')
+                    return redirect('merah:transaksi_mypay')
 
                 recipient_id = recipient[0]['id_user']
 
@@ -477,53 +529,88 @@ def transaksi_mypay(request):
 
 
 def status_pekerjaan(request):
-    """
-    View untuk menampilkan dan mengubah status pekerjaan yang sedang dikerjakan oleh pekerja
-    """
+    penggunalogin = request.session.get('penggunalogin')
+    
+    if not penggunalogin or penggunalogin.get('role') != 'pekerja':
+        messages.error(request, 'Anda harus login sebagai pekerja')
+        return redirect('merah:login')
+
     status_filter = request.GET.get('status', '')
     nama_filter = request.GET.get('nama', '').lower()
 
-    worker_jobs = [
-        job for job in DUMMY_JOB_ORDERS
-        if job['status'] in [
-            'Menunggu Pekerja Berangkat',
-            'Pekerja Tiba Di Lokasi',
-            'Pelayanan Jasa Sedang Dilakukan',
-            'Pesanan Selesai',
-            'Pesanan Dibatalkan',
-        ]
-    ]
+    # Modified query to only show accepted jobs
+    base_query = f"""
+    SELECT DISTINCT ON (pj.id_tr_pemesanan_jasa)
+        pj.id_tr_pemesanan_jasa,
+        kj.namakategori as kategori,
+        sj.nama as subkategori,
+        pj.tglpemesanan,
+        pj.totalbiaya,
+        p.alamat,
+        sp.status as current_status,
+        sp.id_status_pesanan as status_id,
+        ts.tglwaktu
+    FROM TR_PEMESANAN_JASA pj
+    INNER JOIN SUBKATEGORI_JASA sj ON pj.idkategorijasa = sj.id_subkategori_jasa
+    INNER JOIN KATEGORI_JASA kj ON sj.kategorijasaid = kj.id_kategori_jasa
+    INNER JOIN PENGGUNA p ON pj.idpelanggan = p.id_user
+    INNER JOIN (
+        SELECT idtrpemesanan, idstatus, tglwaktu
+        FROM tr_pemesanan_status
+        WHERE (idtrpemesanan, tglwaktu) IN (
+            SELECT idtrpemesanan, MAX(tglwaktu)
+            FROM tr_pemesanan_status
+            GROUP BY idtrpemesanan
+        )
+    ) ts ON pj.id_tr_pemesanan_jasa = ts.idtrpemesanan
+    INNER JOIN STATUS_PESANAN sp ON ts.idstatus = sp.id_status_pesanan
+    WHERE pj.idpekerja = '{penggunalogin['id_user']}'
+    AND sp.id_status_pesanan IN (
+        'ff584044-c977-4424-a57a-c2db0eb360b8',  -- Menunggu Pekerja Berangkat
+        '230342c4-f48c-40f9-ae02-bd9b36939316',  -- Pekerja Tiba Di Lokasi
+        '3ff38f75-44d4-4926-b050-d6086730e1e6',  -- Pelayanan Jasa Sedang Dilakukan
+        '578d6271-7af3-4097-b139-5f1ffbae80f1'   -- Pesanan Selesai
+    )
+    """
+
+    if nama_filter:
+        base_query += f" AND (LOWER(kj.namakategori) LIKE '%{nama_filter}%' OR LOWER(sj.nama) LIKE '%{nama_filter}%')"
+        base_query += """
+        ORDER BY pj.id_tr_pemesanan_jasa, ts.tglwaktu DESC;
+        """
+
+    jobs = query(base_query)
 
     if status_filter:
-        worker_jobs = [job for job in worker_jobs if job['status'] == status_filter]
-    if nama_filter:
-        worker_jobs = [job for job in worker_jobs if nama_filter in f"{job['kategori']} - {job['subkategori']}".lower()]
-    
-    context = {
-        'jobs': worker_jobs,
-    }
-    return render(request, 'status_pekerjaan.html', context)
+        jobs = [job for job in jobs if job['current_status'] == status_filter]
 
-def update_status(request, job_id):
-    """
-    View untuk mengupdate status pekerjaan via form submission
-    """
+    # Handle status updates
     if request.method == 'POST':
+        job_id = request.POST.get('job_id')
         new_status = request.POST.get('status')
-        for job in DUMMY_JOB_ORDERS:
-            if job['id'] == job_id:
-                current_status = job['status']
-                valid_transitions = {
-                    'Menunggu Pekerja Berangkat': 'Pekerja Tiba Di Lokasi',
-                    'Pekerja Tiba Di Lokasi': 'Pelayanan Jasa Sedang Dilakukan',
-                    'Pelayanan Jasa Sedang Dilakukan': 'Pesanan Selesai',
-                }
-                if valid_transitions.get(current_status) == new_status:
-                    job['status'] = new_status
-                    messages.success(request, 'Status pekerjaan berhasil diubah.')
-                else:
-                    messages.error(request, 'Transisi status tidak valid.')
-                break
-        else:
-            messages.error(request, 'Pekerjaan tidak ditemukan.')
-    return redirect('merah:status_pekerjaan')
+        
+        if job_id and new_status:
+            status_mapping = {
+                'Pekerja tiba di lokasi': '230342c4-f48c-40f9-ae02-bd9b36939316',
+                'Pelayanan jasa sedang dilakukan': '3ff38f75-44d4-4926-b050-d6086730e1e6',
+                'Pesanan selesai': '578d6271-7af3-4097-b139-5f1ffbae80f1'
+            }
+            
+            status_id = status_mapping.get(new_status)
+            print(f"Jb Id: {job_id}")
+            print(f"statustsututus: {status_id}")
+            if status_id:
+                query_str = f"""
+                INSERT INTO TR_PEMESANAN_STATUS (idtrpemesanan, idstatus, tglwaktu)
+                VALUES ('{job_id}', '{status_id}', NOW());
+                """
+                query(query_str)
+                return redirect('merah:status_pekerjaan')
+
+    context = {
+        'penggunalogin': penggunalogin,
+        'jobs': jobs,
+        'selected_status': status_filter
+    }
+
+    return render(request, 'status_pekerjaan.html', context)

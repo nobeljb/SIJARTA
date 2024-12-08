@@ -33,7 +33,7 @@
 
         <h1 class="text-xl font-semibold text-gray-800 text-center mb-6">Transaksi MyPay</h1>
         
-        <form id="transaksiForm" method="post" action="{% url 'mypay:transaksi_mypay' %}">
+        <form id="transaksiForm" method="post" action="{% url 'merah:transaksi_mypay' %}">
             {% csrf_token %}
             <input type="hidden" id="selectedState" name="selectedState" value="">
         

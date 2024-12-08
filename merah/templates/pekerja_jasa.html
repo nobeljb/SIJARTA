@@ -1,5 +1,3 @@
-<!-- pekerja_jasa.html -->
-
 {% extends 'base.html' %}
 
 {% block navbar %}
@@ -7,61 +5,86 @@
 {% endblock navbar %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8 max-w-4xl">
-    <div class="bg-white rounded-lg shadow-md p-8">
-        <h1 class="text-2xl font-semibold text-primary text-center mb-8">Pekerjaan Jasa Tersedia</h1>
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto p-6 bg-white rounded-lg shadow-lg max-w-4xl">
+        <h1 class="text-3xl font-bold text-center mb-6">Pekerjaan Jasa Tersedia</h1>
 
         <!-- Filters -->
-        <div class="grid grid-cols-2 gap-6 mb-8">
-            <div>
-                <label for="kategori" class="block text-teks mb-2 font-medium">Kategori Jasa:</label>
-                <select id="kategori" class="w-full rounded-md border-secondary focus:border-primary focus:ring-2 focus:ring-primary-light">
-                    <option value="">Kategori</option>
+        <form method="get" class="mb-8">
+            <!-- Filter Dropdown Kategori -->
+            <div class="mb-6">
+                <label for="kategori" class="text-lg font-medium block mb-2">Pilih Kategori:</label>
+                <select id="kategori" name="category" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F59]">
+                    <option value="">Semua Kategori</option>
                     {% for category in categories %}
-                    <option value="{{ category }}" {% if category == worker_category %}selected{% endif %}>
-                        {{ category }}
+                    <option value="{{ category.id_kategori_jasa }}" {% if category.id_kategori_jasa == selected_category %}selected{% endif %}>
+                        {{ category.namakategori }}
                     </option>
                     {% endfor %}
                 </select>
             </div>
-            <div>
-                <label for="subkategori" class="block text-teks mb-2 font-medium">Subkategori Jasa:</label>
-                <select id="subkategori" class="w-full rounded-md border-secondary focus:border-primary focus:ring-2 focus:ring-primary-light">
-                    <option value="">Kategori</option>
+
+            <!-- Filter Dropdown Subkategori -->
+            <div class="mb-6">
+                <label for="subkategori" class="text-lg font-medium block mb-2">Pilih Subkategori:</label>
+                <select id="subkategori" name="subcategory" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F59]" {% if not selected_category %}disabled{% endif %}>
+                    <option value="">Semua Subkategori</option>
+                    {% for sub in subcategories %}
+                        {% if selected_category and sub.kategorijasaid == selected_category %}
+                        <option value="{{ sub.id_subkategori_jasa }}" {% if sub.id_subkategori_jasa == selected_subcategory %}selected{% endif %}>
+                            {{ sub.nama }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
                 </select>
             </div>
-        </div>
+
+            <!-- Search Button -->
+            <div class="mb-6 text-center">
+                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-[#2C5F59] text-white font-semibold rounded-lg transition duration-200 hover:bg-[#234A45]">
+                    Cari Pekerjaan
+                </button>
+            </div>
+        </form>
 
         <!-- Job List -->
         <div class="space-y-6">
             {% for job in jobs %}
-                    <div class="card border border-secondary p-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-lg font-semibold text-primary">{{ job.kategori }} - {{ job.subkategori }}</h3>
-                                <p class="text-teks">{{ job.alamat }}</p>
-                            </div>
-                            <span class="bg-accent text-white px-3 py-1 rounded-full text-sm">{{ job.status }}</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <p class="text-teks">Tanggal:</p>
-                                <p class="font-medium">{{ job.tanggal }}</p>
-                            </div>
-                            <div>
-                                <p class="text-teks">Waktu:</p>
-                                <p class="font-medium">{{ job.waktu }}</p>
-                            </div>
-                            <div>
-                                <p class="text-teks">Harga:</p>
-                                <p class="font-medium">{{ job.harga }}</p>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary w-full" onclick="takeJob({{ job.id }})">Kerjakan Pesanan</button>
+            <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-[#2C5F59]">{{ job.kategori }} - {{ job.subkategori }}</h3>
+                        <p class="text-gray-600 mt-1">{{ job.alamat }}</p>
                     </div>
+                    <span class="bg-[#2C5F59] text-white px-4 py-2 rounded-full text-sm font-medium">
+                        Mencari Pekerja Terdekat
+                    </span>
+                </div>
+                <div class="grid grid-cols-3 gap-6 mb-4">
+                    <div>
+                        <p class="text-gray-500 text-sm">Tanggal:</p>
+                        <p class="font-medium">{{ job.tglpemesanan|date:"d M Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Sesi:</p>
+                        <p class="font-medium">{{ job.sesi }} hari</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Harga:</p>
+                        <p class="font-medium">Rp {{ job.totalbiaya|floatformat:0 }}</p>
+                    </div>
+                </div>
+                <form method="POST" class="mt-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="job_id" value="{{ job.id_tr_pemesanan_jasa }}">
+                    <button type="submit" class="w-full bg-[#2C5F59] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#234A45] transition duration-200">
+                        Kerjakan Pesanan
+                    </button>
+                </form>
+            </div>
             {% empty %}
-            <div class="text-center text-teks p-8">
-                Tidak ada pesanan jasa yang tersedia saat ini.
+            <div class="text-center py-8">
+                <p class="text-gray-500 text-lg">Tidak ada pesanan jasa yang tersedia saat ini.</p>
             </div>
             {% endfor %}
         </div>
@@ -69,47 +92,49 @@
 </div>
 
 <script>
-// In pekerja_jasa.html
 document.addEventListener('DOMContentLoaded', function() {
     const kategoriSelect = document.getElementById('kategori');
     const subkategoriSelect = document.getElementById('subkategori');
     
-    // Add change handlers
-    kategoriSelect.addEventListener('change', function() {
-        const selectedCategory = this.value;
-        updateSubcategories(selectedCategory);
-        filterJobs();
-    });
-    
-    subkategoriSelect.addEventListener('change', function() {
-        filterJobs();
-    });
-    
-    function updateSubcategories(category) {
+    // Parse subcategories data from Django template
+    const subcategoriesData = JSON.parse(document.getElementById('subcategories-data').textContent);
+
+    function updateSubcategories() {
+        const selectedCategory = kategoriSelect.value;
         subkategoriSelect.innerHTML = '<option value="">Semua Subkategori</option>';
         
-        if (category && categories[category]) {
-            categories[category].forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.textContent = sub;
-                subkategoriSelect.appendChild(option);
+        if (selectedCategory) {
+            subkategoriSelect.disabled = false;
+            subcategoriesData.forEach(function(sub) {
+                if (sub.kategorijasaid === selectedCategory) {
+                    const option = document.createElement('option');
+                    option.value = sub.id_subkategori_jasa;
+                    option.textContent = sub.nama;
+                    if (sub.id_subkategori_jasa === '{{ selected_subcategory }}') {
+                        option.selected = true;
+                    }
+                    subkategoriSelect.appendChild(option);
+                }
             });
+        } else {
+            subkategoriSelect.disabled = true;
         }
     }
-    
-    function filterJobs() {
-        const params = new URLSearchParams(window.location.search);
-        params.set('category', kategoriSelect.value);
-        params.set('subcategory', subkategoriSelect.value);
-        window.location.search = params.toString();
-    }
-});
 
-function takeJob(jobId) {
-    if (confirm('Apakah Anda yakin ingin mengambil pekerjaan ini?')) {
-        alert('Pesanan berhasil diambil!');
-    }
-}
+    // Initialize dropdowns
+    kategoriSelect.addEventListener('change', updateSubcategories);
+    updateSubcategories();
+
+    // Add loading state to form submission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = 'Mencari...';
+    });
+});
 </script>
+
+<!-- JSON data for subcategories -->
+{{ subcategories|json_script:"subcategories-data" }}
+
 {% endblock %}
