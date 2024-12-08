@@ -1,3 +1,5 @@
+<!-- TRANSAKSI_MYPAY.HTML -->
+
 {% extends 'base.html' %}
 
 {% block navbar %}
@@ -9,14 +11,32 @@
 {% endblock navbar %}
 
 {% block content %}
+
+<!-- Current Date -->
+<div class="container mx-auto px-6 py-4">
+    <div class="text-gray-600">
+        {% now "l, d F Y" %}
+    </div>
+</div>
+
+
 <div class="container mx-auto px-6 py-12 max-w-lg">
     <!-- Card Wrapper -->
     <div class="bg-white shadow-lg rounded-lg p-6">
+        <!-- User Info Section -->
+        <div class="text-center mb-8 p-4 bg-gray-50 rounded-lg">
+            <h2 class="text-lg font-semibold text-gray-800">{{ penggunalogin.nama }}</h2>
+            <p class="text-emerald-600 font-medium mt-2">
+                Saldo: Rp {{ penggunalogin.saldomypay|floatformat:2|default:'0'|stringformat:'s'|slice:':-3'|add:',000' }}
+            </p>
+        </div>
+
         <h1 class="text-xl font-semibold text-gray-800 text-center mb-6">Transaksi MyPay</h1>
         
-        <form id="transaksiForm" method="post">
+        <form id="transaksiForm" method="post" action="{% url 'mypay:transaksi_mypay' %}">
             {% csrf_token %}
-            
+            <input type="hidden" id="selectedState" name="selectedState" value="">
+        
             <!-- Kategori Transaksi -->
             <div class="mb-4">
                 <label for="kategori" class="block text-gray-700 font-medium mb-2">Kategori Transaksi</label>
@@ -30,26 +50,26 @@
                     <option value="Withdrawal">Withdrawal</option>
                 </select>
             </div>
-            
+        
             <!-- State 1: Top Up -->
             <div id="stateTopUp" class="hidden">
                 <label for="nominal_topup" class="block text-gray-700 font-medium mb-2">Nominal Top Up</label>
-                <input type="number" id="nominal_topup" name="nominal_topup" class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                <input type="number" id="nominal_topup" name="nominal_topup" min="1" class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500" required>
             </div>
-            
+        
             <!-- State 2: Payment -->
             <div id="statePayment" class="hidden">
                 <label for="jasa" class="block text-gray-700 font-medium mb-2">Pilih Jasa</label>
-                <select id="jasa" name="jasa" class="w-full border border-gray-300 rounded-md px-4 py-2 mb-4 focus:ring-2 focus:ring-blue-500">
+                <select id="jasa" name="jasa" class="w-full border border-gray-300 rounded-md px-4 py-2 mb-4 focus:ring-2 focus:ring-blue-500" required>
                     <option value="">Pilih Jasa</option>
                     {% for jasa in list_jasa %}
-                        <option value="{{ jasa.nama }}" data-totalbiaya="{{ jasa.totalbiaya }}">{{ jasa.nama }}</option>
+                        <option value="{{ jasa.id_tr_pemesanan_jasa }}" data-totalbiaya="{{ jasa.totalbiaya }}">{{ jasa.nama }}</option>
                     {% endfor %}
                 </select>
                 <label for="nominal_payment" class="block text-gray-700 font-medium mb-2">Jumlah Nominal</label>
-                <input type="number" id="nominal_payment" name="nominal_payment" class="w-full bg-gray-100 border border-gray-300 rounded-md px-4 py-2" readonly>
+                <input type="number" id="nominal_payment" name="nominal_payment" class="w-full bg-gray-100 border border-gray-300 rounded-md px-4 py-2" readonly required>
             </div>
-            
+        
             <!-- State 3: Transfer -->
             <div id="stateTransfer" class="hidden">
                 <label for="no_hp_tujuan" class="block text-gray-700 font-medium mb-2">No HP Tujuan</label>
@@ -57,22 +77,22 @@
                 <label for="nominal_transfer" class="block text-gray-700 font-medium mb-2">Nominal Transfer</label>
                 <input type="number" id="nominal_transfer" name="nominal_transfer" class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500">
             </div>
-            
+        
             <!-- State 4: Withdrawal -->
             <div id="stateWithdrawal" class="hidden">
                 <label for="bank" class="block text-gray-700 font-medium mb-2">Pilih Bank</label>
                 <select id="bank" name="bank" class="w-full border border-gray-300 rounded-md px-4 py-2 mb-4 focus:ring-2 focus:ring-blue-500">
                     <option value="">Pilih Bank</option>
-                    <option value="Bank A">Bank A</option>
-                    <option value="Bank B">Bank B</option>
-                    <option value="Bank C">Bank C</option>
+                    <option value="Bank Mandiri">Bank Mandiri</option>
+                    <option value="Bank Central Asia (BCA)">Bank Central Asia (BCA)</option>
+                    <option value="Bank Nasional Indonesia (BNI)">Bank Nasional Indonesia (BNI)</option>
                 </select>
                 <label for="nomor_rekening" class="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
                 <input type="text" id="nomor_rekening" name="nomor_rekening" class="w-full border border-gray-300 rounded-md px-4 py-2 mb-4 focus:ring-2 focus:ring-blue-500">
                 <label for="nominal_withdrawal" class="block text-gray-700 font-medium mb-2">Nominal Withdrawal</label>
                 <input type="number" id="nominal_withdrawal" name="nominal_withdrawal" class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500">
             </div>
-            
+        
             <div class="mt-6 flex justify-center">
                 <button type="submit" id="submitButton" class="px-6 py-2 bg-emerald-600 text-white font-medium rounded-md shadow hover:bg-blue-700 transition duration-200 hidden">Proses Transaksi</button>
             </div>
@@ -82,75 +102,86 @@
 
 <!-- JavaScript to handle form state display and button text -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const kategoriSelect = document.getElementById('kategori');
-    const stateTopUp = document.getElementById('stateTopUp');
-    const statePayment = document.getElementById('statePayment');
-    const stateTransfer = document.getElementById('stateTransfer');
-    const stateWithdrawal = document.getElementById('stateWithdrawal');
-    const submitButton = document.getElementById('submitButton');
-    const jasaSelect = document.getElementById('jasa');
-    const nominalPayment = document.getElementById('nominal_payment');
-
-    // Function to hide all state divs and the submit button
-    function hideAllStates() {
-        console.log('Hiding all states...');
-        stateTopUp.classList.add('hidden');
-        statePayment.classList.add('hidden');
-        stateTransfer.classList.add('hidden');
-        stateWithdrawal.classList.add('hidden');
-        submitButton.classList.add('hidden');
-    }
-
-    // Function to show the selected state div and update button text
-    function showState(selected) {
-        console.log('Showing state:', selected);
-        switch(selected) {
-            case 'TopUp':
-                stateTopUp.classList.remove('hidden');
-                submitButton.textContent = 'Top Up';
-                submitButton.classList.remove('hidden');
-                break;
-            case 'Payment':
-            case 'Transfer':
-            case 'Withdrawal':
-                if (selected === 'Payment') {
-                    statePayment.classList.remove('hidden');
-                } else if (selected === 'Transfer') {
-                    stateTransfer.classList.remove('hidden');
-                } else if (selected === 'Withdrawal') {
-                    stateWithdrawal.classList.remove('hidden');
-                }
-                submitButton.textContent = 'Bayar';
-                submitButton.classList.remove('hidden');
-                break;
-            default:
-                hideAllStates();
-                break;
+    document.addEventListener('DOMContentLoaded', function() {
+        const kategoriSelect = document.getElementById('kategori');
+        const stateTopUp = document.getElementById('stateTopUp');
+        const statePayment = document.getElementById('statePayment');
+        const stateTransfer = document.getElementById('stateTransfer');
+        const stateWithdrawal = document.getElementById('stateWithdrawal');
+        const submitButton = document.getElementById('submitButton');
+        const jasaSelect = document.getElementById('jasa');
+        const nominalPayment = document.getElementById('nominal_payment');
+        const selectedState = document.getElementById('selectedState');
+    
+        // Function to hide all state divs, disable their inputs, and hide the submit button
+        function hideAllStates() {
+            console.log('Hiding all states');
+            [stateTopUp, statePayment, stateTransfer, stateWithdrawal].forEach(function(stateDiv) {
+                stateDiv.classList.add('hidden');
+                // Disable all inputs and selects within the stateDiv
+                const inputs = stateDiv.querySelectorAll('input, select');
+                inputs.forEach(function(input) {
+                    input.disabled = true;
+                });
+            });
+            submitButton.classList.add('hidden');
         }
-    }
-
-    // Event listener for kategori select change
-    kategoriSelect.addEventListener('change', function() {
-        console.log('Kategori select changed to:', this.value);
+    
+        // Function to show selected state div, enable its inputs, and show the submit button
+        function showState(selected) {
+            console.log('Showing state:', selected);
+            document.getElementById('selectedState').value = selected;
+    
+            // Hide all states and disable inputs first
+            hideAllStates();
+    
+            // Reference to the state div
+            let stateDiv = null;
+    
+            switch(selected) {
+                case 'TopUp':
+                    stateDiv = stateTopUp;
+                    break;
+                case 'Payment':
+                    stateDiv = statePayment;
+                    break;
+                case 'Transfer':
+                    stateDiv = stateTransfer;
+                    break;
+                case 'Withdrawal':
+                    stateDiv = stateWithdrawal;
+                    break;
+                default:
+                    return;
+            }
+    
+            // Show the selected state
+            stateDiv.classList.remove('hidden');
+            submitButton.classList.remove('hidden');
+    
+            // Enable all inputs and selects within the stateDiv
+            const inputs = stateDiv.querySelectorAll('input, select');
+            inputs.forEach(function(input) {
+                input.disabled = false;
+            });
+        }
+    
+        // Event listener for kategori select change
+        kategoriSelect.addEventListener('change', function() {
+            showState(this.value);
+        });
+    
+        // Event listener for jasa select change to update nominal_payment
+        if (jasaSelect) {
+            jasaSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const totalBiaya = selectedOption.getAttribute('data-totalbiaya') || '';
+                nominalPayment.value = totalBiaya;
+            });
+        }
+    
+        // Initially disable all inputs
         hideAllStates();
-        showState(this.value);
     });
-
-    // Event listener for jasa select change to update nominal_payment
-    jasaSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const totalBiaya = selectedOption.getAttribute('data-totalbiaya') || '';
-        console.log('Selected Jasa Total Biaya:', totalBiaya);
-        nominalPayment.value = totalBiaya;
-    });
-
-    // Optional: If you want to show state based on pre-selected value (e.g., after form submission)
-    const initialSelected = kategoriSelect.value;
-    if(initialSelected) {
-        console.log('Initial selected value:', initialSelected);
-        showState(initialSelected);
-    }
-});
 </script>
 {% endblock content %}

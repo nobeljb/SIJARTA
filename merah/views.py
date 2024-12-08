@@ -1,3 +1,5 @@
+import json
+import uuid
 from django.shortcuts import redirect, render
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -195,6 +197,15 @@ def show_mypay(request):
     WHERE userid = '{penggunalogin['id_user']}';
     """
     q_transasction = query(query_str)
+
+    query_str = f"""
+    select saldomypay from pengguna
+    where id_user = '{penggunalogin['id_user']}'
+    """
+    pengguna = query(query_str)
+    penggunalogin['saldomypay'] = str(pengguna[0]['saldomypay'])
+    request.session['penggunalogin'] = penggunalogin
+
     paginator = Paginator(q_transasction, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -212,26 +223,226 @@ def transaksi_mypay(request):
     """
     View trcansaction 
     """
+
+    print(f"Request method: {request.method}")
     penggunalogin = request.session.get('penggunalogin')
+    if not penggunalogin:
+        return redirect('merah:login')
+
+    if request.method == 'POST':
+            print("aaa")
+            print("POST data:", request.POST)
+            selected_state = request.POST.get('selectedState')
+            print(f"sitolol ini: {selected_state}")
+            id_tr = uuid.uuid4()
+
+            if selected_state == 'Payment':
+                print("masuk")
+                jasa = request.POST.get('jasa')
+                print(jasa)
+                nominal_payment = request.POST.get('nominal_payment')
+
+                # Validasi input jasa dan nominal_payment
+                if not jasa or not nominal_payment:
+                    messages.error(request, 'Jasa dan nominal pembayaran harus diisi.')
+                    return redirect('transaksi_mypay')
+
+                try:
+                    nominal_payment = Decimal(nominal_payment)
+                    if nominal_payment <= 0:
+                        raise ValueError
+                except:
+                    messages.error(request, 'Nominal pembayaran tidak valid.')
+                    return redirect('transaksi_mypay')
+
+                user_id = penggunalogin['id_user']
+                query_str = f"""
+                INSERT INTO TR_MYPAY (id_tr_mypay, userid, tgl, nominal, kategoriid)
+                VALUES ('{id_tr}', '{user_id}' , NOW(), {nominal_payment}, 'aeb1ae67-aac9-4ef3-8473-a04b33458551');
+                """
+                hasil_add = query(query_str)
+
+                query_str = f"""
+                    UPDATE PENGGUNA
+                    SET saldomypay = saldomypay - {nominal_payment}
+                    WHERE id_user = '{user_id}';
+                    """
+                hasil_update = query(query_str)
+
+                query_str = f"""
+                SELECT saldomypay FROM pengguna
+                where id_user = '{user_id}'
+                """
+                update_saldo = query(query_str)
+                request.session['penggunalogin']['saldomypay'] = update_saldo[0]['saldomypay']
+
+                messages.success(request, f'Pembayaran sebesar Rp {nominal_payment:,.2f} berhasil.')
+ 
+                query_str = f"""
+                INSERT INTO TR_PEMESANAN_STATUS (idtrpemesanan, idstatus, tglwaktu)
+                VALUES ('{jasa}', '2dd8907b-bb4e-4dd2-a6ce-613a63255391', NOW());
+                """
+                hasil_status = query(query_str)
+
+                # return redirect('mypay:transaksi_mypay')
+
+            elif selected_state == 'TopUp':
+                nominal_topup = request.POST.get('nominal_topup')
+
+                # Validasi input nominal_topup
+                if not nominal_topup:
+                    messages.error(request, 'Nominal top up harus diisi.')
+                    return redirect('transaksi_mypay')
+
+                try:
+                    nominal_topup = Decimal(nominal_topup)
+                    if nominal_topup <= 0:
+                        raise ValueError
+                except:
+                    messages.error(request, 'Nominal top up tidak valid.')
+                    return redirect('transaksi_mypay')
+                
+                user_id = penggunalogin['id_user']
+                query_str = f"""
+                INSERT INTO TR_MYPAY (id_tr_mypay, userid, tgl, nominal, kategoriid)
+                VALUES ('{id_tr}', '{user_id}' , NOW(), {nominal_topup}, '637a8319-3473-46fc-b907-c4271dd098a6');
+                """
+                hasil_add = query(query_str)
+
+                query_str = f"""
+                    UPDATE PENGGUNA
+                    SET saldomypay = saldomypay + {nominal_topup}
+                    WHERE id_user = '{user_id}';
+                    """
+                hasil_update = query(query_str)
+
+                query_str = f"""
+                    SELECT saldomypay FROM pengguna
+                    where id_user = '{user_id}'
+                    """
+                update_saldo = query(query_str)
+                print(update_saldo)
+                penggunalogin['saldomypay'] = update_saldo[0]['saldomypay']
+
+                # return redirect('mypay:transaksi_mypay')
+
+            elif selected_state == 'Transfer':
+                no_hp_tujuan = request.POST.get('no_hp_tujuan')
+                nominal_transfer = request.POST.get('nominal_transfer')
+
+                if not no_hp_tujuan or not nominal_transfer:
+                    messages.error(request, 'Nomor HP tujuan dan nominal transfer harus diisi.')
+                    return redirect('mypay:transaksi_mypay')
+
+                try:
+                    nominal_transfer = Decimal(nominal_transfer)
+                    if nominal_transfer <= 0:
+                        raise ValueError
+                except:
+                    messages.error(request, 'Nominal transfer tidak valid.')
+                    return redirect('mypay:transaksi_mypay')
+
+                # Check if sender has sufficient balance
+                current_balance = Decimal(str(penggunalogin['saldomypay']))
+                if current_balance < nominal_transfer:
+                    messages.error(request, 'Saldo tidak mencukupi untuk melakukan transfer.')
+                    return redirect('mypay:transaksi_mypay')
+
+                # Check if recipient exists
+                query_str = f"""
+                SELECT id_user, saldomypay FROM pengguna WHERE nohp = '{no_hp_tujuan}'
+                """
+                recipient = query(query_str)
+
+                if not recipient:
+                    messages.error(request, 'Nomor HP tujuan tidak ditemukan.')
+                    return redirect('mypay:transaksi_mypay')
+
+                recipient_id = recipient[0]['id_user']
+
+                transfer_out_id = uuid.uuid4()
+                transfer_in_id = uuid.uuid4()
+
+                query_str = f"""
+                INSERT INTO TR_MYPAY (id_tr_mypay, userid, tgl, nominal, kategoriid)
+                VALUES ('{transfer_out_id}', '{penggunalogin['id_user']}', NOW(), {nominal_transfer}, '43de9edc-bee8-417d-bf1a-e135cd8006f1');
+                """
+                query(query_str)
+
+                # Create transfer in transaction
+                query_str = f"""
+                INSERT INTO TR_MYPAY (id_tr_mypay, userid, tgl, nominal, kategoriid)
+                VALUES ('{transfer_in_id}', '{recipient_id}', NOW(), {nominal_transfer}, '43de9edc-bee8-417d-bf1a-e135cd8006f1');
+                """
+                query(query_str)
+
+                # Update sender balance
+                query_str = f"""
+                UPDATE PENGGUNA 
+                SET saldomypay = saldomypay - {nominal_transfer}
+                WHERE id_user = '{penggunalogin['id_user']}';
+                """
+                query(query_str)
+
+                # Update recipient balance
+                query_str = f"""
+                UPDATE PENGGUNA 
+                SET saldomypay = saldomypay + {nominal_transfer}
+                WHERE id_user = '{recipient_id}';
+                """
+                query(query_str)
+
+                # Update session balance
+                query_str = f"""
+                SELECT saldomypay FROM pengguna WHERE id_user = '{penggunalogin['id_user']}'
+                """
+                update_saldo = query(query_str)
+                penggunalogin['saldomypay'] = update_saldo[0]['saldomypay']
+
+                messages.success(request, f'Transfer sebesar Rp {nominal_transfer:,.2f} ke {no_hp_tujuan} berhasil.')
+
+            elif selected_state == "Withdrawal":
+                nominal_withdrawal = request.POST.get('nominal_withdrawal')
+                user_id = penggunalogin['id_user']
+
+                query_str = f"""
+                INSERT INTO TR_MYPAY(id_tr_mypay, userid, tgl, nominal, kategoriid)
+                VALUES ('{id_tr}', '{user_id}', NOW(), {nominal_withdrawal}, '79f60eae-c677-4b08-80ae-4c0adc361317');
+                """
+
+                hasil_add = query(query_str)
+
+                query_str = f"""
+                UPDATE PENGGUNA
+                SET saldomypay = saldomypay - {nominal_withdrawal}
+                WHERE id_user = '{user_id}';
+                """
+                hasil_update = query(query_str)
+
+                query_str = f"""
+                SELECT saldomypay FROM pengguna WHERE id_user = '{user_id}'
+                """
+                update_saldo = query(query_str)
+                request.session['penggunalogin']['saldomypay'] = str(update_saldo[0]['saldomypay'])
+
 
     jasa_query_str = f"""
-    SELECT su.nama, tj.totalbiaya
-    FROM tr_pemesanan_jasa tj
+        SELECT su.nama, tj.totalbiaya, tj.id_tr_pemesanan_jasa
+        FROM tr_pemesanan_jasa tj
 
-    INNER JOIN SUBKATEGORI_JASA SU
-    ON tj.idkategorijasa = SU.id_subkategori_jasa
+        INNER JOIN SUBKATEGORI_JASA SU
+        ON tj.idkategorijasa = SU.id_subkategori_jasa
 
-    WHERE tj.id_tr_pemesanan_jasa IN (
-    SELECT ts.idtrpemesanan
-    FROM tr_pemesanan_status ts
-    GROUP BY ts.idtrpemesanan
-    HAVING COUNT(*) = 1 AND bool_and(ts.idstatus = '40bd17f1-779d-42e7-bcd3-26390d5b251c')
-    ) AND 
-    tj.idpelanggan = '{penggunalogin['id_user']}'
-    ;
-    """
+        WHERE tj.id_tr_pemesanan_jasa IN (
+        SELECT ts.idtrpemesanan
+        FROM tr_pemesanan_status ts
+        GROUP BY ts.idtrpemesanan
+        HAVING COUNT(*) = 1 AND bool_and(ts.idstatus = '40bd17f1-779d-42e7-bcd3-26390d5b251c')
+        ) AND 
+        tj.idpelanggan = '{penggunalogin['id_user']}'
+        ;
+        """
     jasa_dipesan = query(jasa_query_str)
-    print(jasa_dipesan)
 
     context = {
         'penggunalogin': penggunalogin,
