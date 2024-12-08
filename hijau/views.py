@@ -322,4 +322,16 @@ def batal_pemesanan(request, id_pemesanan):
     insert into tr_pemesanan_status values('{id_pemesanan}', '506bb50a-5943-4eb7-a48c-00334aeba847', current_date)
     """
     query(query_str)
+    
+    penggunalogin = request.session.get('penggunalogin')
+
+    query_str = f"""
+    select saldomypay from pengguna
+    where id_user = '{penggunalogin['id_user']}'
+    """
+    pengguna = query(query_str)
+
+    penggunalogin['saldomypay'] = str(pengguna[0]['saldomypay'])
+    request.session['penggunalogin'] = penggunalogin
+    
     return redirect('hijau:view_pemesanan')
