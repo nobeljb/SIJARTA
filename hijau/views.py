@@ -5,10 +5,6 @@ from datetime import date, datetime
 from django import forms
 from utils.query import query
 
-DUMMY_USER = {
-    'role': 'Pengguna',
-}
-
 def homepage(request):
 
     #query kategori
