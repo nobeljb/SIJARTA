@@ -5,10 +5,6 @@ from datetime import date, datetime
 from django import forms
 from utils.query import query
 
-DUMMY_USER = {
-    'role': 'Pengguna',
-}
-
 def homepage(request):
 
     #query kategori
@@ -177,7 +173,7 @@ def create_pemesanan(request, subcategory_id, session, price):
         'harga': price,
         'penggunalogin': penggunalogin,
     }
-    if request.method == 'POST':
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         form = PemesananForm(request.POST)
         if form.is_valid():
             # Ambil data dari form
@@ -185,32 +181,58 @@ def create_pemesanan(request, subcategory_id, session, price):
             metode_bayar = form.cleaned_data['metode_bayar']
             harga_akhir = float(price)  # Default harga adalah harga awal
             berhasil_diskon = False
-            # Cek apakah kode diskon valid
+
+            # Cek apakah kode promo valid terlebih dahulu
             if diskon_code:
-                query_diskon = f"""
-                SELECT * FROM diskon
-                WHERE kode_diskon = '{diskon_code}'"""
-                diskon_data = query(query_diskon)
-                
-                if diskon_data:
-                    diskon = diskon_data[0]  # Ambil data diskon pertama (jika ada)
-                    min_transaksi = float(diskon['mintrpemesanan'])
-                    potongan = float(diskon['potongan'])
+                query_str = f"""
+                    SELECT * FROM promo
+                    JOIN diskon ON kode_diskon = kode_promo
+                    WHERE kode_promo = '{diskon_code}' AND tglakhirberlaku >= current_date
+                """
+                promo_data = query(query_str)
+
+                if promo_data:
+                    promo = promo_data[0]
+                    min_transaksi = float(promo['mintrpemesanan'])
+                    potongan = float(promo['potongan'])
                     berhasil_diskon = True
-                    
-                    # Cek apakah harga memenuhi syarat minimum transaksi
-                    if float(price) >= min_transaksi:
-                        harga_akhir -= potongan  # Kurangi harga dengan potongan
+
+                    if float(price) < min_transaksi:
+                        # Promo tidak valid (harga kurang dari min_transaksi)
+                        return JsonResponse({'success': False, 'message': 'Harga tidak memenuhi syarat minimum transaksi.'})
                     else:
-                        return JsonResponse({
-                            'status': 'error',
-                            'message': f"Transaksi minimum untuk kode diskon ini adalah Rp {min_transaksi:,}.",
-                        })
+                        harga_akhir -= potongan
+
                 else:
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': "Kode diskon tidak valid.",
-                    })
+                    # Jika promo tidak ditemukan, cek apakah kode diskon valid
+                    query_diskon = f"""
+                    SELECT * FROM tr_pembelian_voucher
+                    JOIN diskon ON kode_diskon = idvoucher
+                    WHERE idpelanggan = '{penggunalogin['id_user']}' AND idvoucher = '{diskon_code}' AND tglakhir >= current_date AND tglawal <= current_date
+                    ORDER BY tglawal ASC, tglakhir ASC
+                    """
+                    diskon_data = query(query_diskon)
+
+                    if diskon_data:
+                        diskon = diskon_data[0]  # Ambil data diskon pertama (jika ada)
+                        min_transaksi = float(diskon['mintrpemesanan'])
+                        potongan = float(diskon['potongan'])
+                        berhasil_diskon = True
+
+                        if float(price) < min_transaksi:
+                            # Diskon tidak valid (harga kurang dari min_transaksi)
+                            return JsonResponse({'success': False, 'message': 'Harga tidak memenuhi syarat minimum transaksi.'})
+                        else:
+                            harga_akhir -= potongan  # Kurangi harga dengan potongan
+                            query_str = f"""
+                            UPDATE tr_pembelian_voucher 
+                            SET telahdigunakan = telahdigunakan + 1
+                            WHERE id_tr_pembelian_voucher = '{diskon['id_tr_pembelian_voucher']}'
+                            """
+                            query(query_str)
+                    else:
+                        # Jika kode diskon juga tidak valid
+                        return JsonResponse({'success': False, 'message': 'Kode diskon/promo tidak valid.'})
 
             id_pemesanan = uuid.uuid4()
             # Simpan pemesanan ke database
@@ -231,12 +253,17 @@ def create_pemesanan(request, subcategory_id, session, price):
             
             query(query_str)
 
-            query_str = f"""
-                insert into tr_pemesanan_status values('{id_pemesanan}', '40bd17f1-779d-42e7-bcd3-26390d5b251c', current_date)
-                """
+            if metode_bayar == 'ab9aab5e-5706-4c35-8099-765b7f41a925':
+                query_str = f"""
+                    insert into tr_pemesanan_status values('{id_pemesanan}', '40bd17f1-779d-42e7-bcd3-26390d5b251c', current_date)
+                    """
+            else:
+                query_str = f"""
+                    insert into tr_pemesanan_status values('{id_pemesanan}', '2dd8907b-bb4e-4dd2-a6ce-613a63255391', current_date)
+                    """
             query(query_str)
 
-            return redirect('hijau:view_pemesanan')
+            return JsonResponse({'success': True, 'message': 'Pemesanan berhasil dibuat.'})
 
     else:  # GET request, tampilkan form kosong
         context['form'] = PemesananForm()
@@ -295,4 +322,16 @@ def batal_pemesanan(request, id_pemesanan):
     insert into tr_pemesanan_status values('{id_pemesanan}', '506bb50a-5943-4eb7-a48c-00334aeba847', current_date)
     """
     query(query_str)
+    
+    penggunalogin = request.session.get('penggunalogin')
+
+    query_str = f"""
+    select saldomypay from pengguna
+    where id_user = '{penggunalogin['id_user']}'
+    """
+    pengguna = query(query_str)
+
+    penggunalogin['saldomypay'] = str(pengguna[0]['saldomypay'])
+    request.session['penggunalogin'] = penggunalogin
+    
     return redirect('hijau:view_pemesanan')
