@@ -177,7 +177,7 @@ def create_pemesanan(request, subcategory_id, session, price):
         'harga': price,
         'penggunalogin': penggunalogin,
     }
-    if request.method == 'POST'and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         form = PemesananForm(request.POST)
         if form.is_valid():
             # Ambil data dari form
@@ -185,37 +185,58 @@ def create_pemesanan(request, subcategory_id, session, price):
             metode_bayar = form.cleaned_data['metode_bayar']
             harga_akhir = float(price)  # Default harga adalah harga awal
             berhasil_diskon = False
-            # Cek apakah kode diskon valid
+
+            # Cek apakah kode promo valid terlebih dahulu
             if diskon_code:
-                query_diskon = f"""
-                SELECT * FROM tr_pembelian_voucher
-                join diskon on kode_diskon = idvoucher
-                WHERE idpelanggan = '{penggunalogin['id_user']}' AND idvoucher = '{diskon_code}' AND tglakhir >= current_date AND tglawal <= current_date
-                ORDER BY tglawal ASC, tglakhir ASC
+                query_str = f"""
+                    SELECT * FROM promo
+                    JOIN diskon ON kode_diskon = kode_promo
+                    WHERE kode_promo = '{diskon_code}' AND tglakhirberlaku >= current_date
                 """
-                diskon_data = query(query_diskon)
-                
-                if diskon_data:
-                    diskon = diskon_data[0]  # Ambil data diskon pertama (jika ada)
-                    min_transaksi = float(diskon['mintrpemesanan'])
-                    potongan = float(diskon['potongan'])
+                promo_data = query(query_str)
+
+                if promo_data:
+                    promo = promo_data[0]
+                    min_transaksi = float(promo['mintrpemesanan'])
+                    potongan = float(promo['potongan'])
                     berhasil_diskon = True
-                    
+
                     if float(price) < min_transaksi:
-                        # Diskon tidak valid (harga kurang dari min_transaksi)
+                        # Promo tidak valid (harga kurang dari min_transaksi)
                         return JsonResponse({'success': False, 'message': 'Harga tidak memenuhi syarat minimum transaksi.'})
                     else:
-                        harga_akhir -= potongan  # Kurangi harga dengan potongan
-                        query_str = f"""
-                        UPDATE tr_pembelian_voucher 
-                        SET telahdigunakan = telahdigunakan + 1
-                        WHERE id_tr_pembelian_voucher = '{diskon['id_tr_pembelian_voucher']}'
-                        """
-                        query(query_str)
+                        harga_akhir -= potongan
 
                 else:
-                    # Diskon tidak valid (kode diskon tidak ditemukan)
-                    return JsonResponse({'success': False, 'message': 'Kode diskon tidak valid.'})
+                    # Jika promo tidak ditemukan, cek apakah kode diskon valid
+                    query_diskon = f"""
+                    SELECT * FROM tr_pembelian_voucher
+                    JOIN diskon ON kode_diskon = idvoucher
+                    WHERE idpelanggan = '{penggunalogin['id_user']}' AND idvoucher = '{diskon_code}' AND tglakhir >= current_date AND tglawal <= current_date
+                    ORDER BY tglawal ASC, tglakhir ASC
+                    """
+                    diskon_data = query(query_diskon)
+
+                    if diskon_data:
+                        diskon = diskon_data[0]  # Ambil data diskon pertama (jika ada)
+                        min_transaksi = float(diskon['mintrpemesanan'])
+                        potongan = float(diskon['potongan'])
+                        berhasil_diskon = True
+
+                        if float(price) < min_transaksi:
+                            # Diskon tidak valid (harga kurang dari min_transaksi)
+                            return JsonResponse({'success': False, 'message': 'Harga tidak memenuhi syarat minimum transaksi.'})
+                        else:
+                            harga_akhir -= potongan  # Kurangi harga dengan potongan
+                            query_str = f"""
+                            UPDATE tr_pembelian_voucher 
+                            SET telahdigunakan = telahdigunakan + 1
+                            WHERE id_tr_pembelian_voucher = '{diskon['id_tr_pembelian_voucher']}'
+                            """
+                            query(query_str)
+                    else:
+                        # Jika kode diskon juga tidak valid
+                        return JsonResponse({'success': False, 'message': 'Kode diskon/promo tidak valid.'})
 
             id_pemesanan = uuid.uuid4()
             # Simpan pemesanan ke database
