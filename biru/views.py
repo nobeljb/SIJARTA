@@ -1,26 +1,61 @@
 from django.shortcuts import render, redirect
 from django.http import Http404,  JsonResponse
+from django.urls import reverse
 from utils.query import query
 from datetime import datetime, timedelta
 import uuid
 
-# View for Testimony Form
-def testimoni_form(request):
+def testimoni_form(request, id_pemesanan):  # Add id_pemesanan as a parameter
     if request.method == "POST":
-        idtrpemesanan = request.POST.get("idtrpemesanan")  # ID of the related order
+        # Get the order ID from the URL parameter
+        idtrpemesanan = id_pemesanan
         rating = int(request.POST.get("rating"))
         comment = request.POST.get("comment")
-
+        
         # Insert the new testimony into the database
         query_str = f"""
         INSERT INTO testimoni (idtrpemesanan, tgl, teks, rating)
         VALUES ('{idtrpemesanan}', '{datetime.today().strftime('%Y-%m-%d')}', '{comment}', {rating});
         """
         query(query_str)
+        
+        # Update the order to mark testimony as submitted
+        # update_query = f"""
+        # UPDATE transaksi_pemesanan 
+        # SET testimoni = 'submitted' 
+        # WHERE id_pemesanan = '{id_pemesanan}';
+        # """
+        # query(update_query)
 
-        return redirect("testimoni_cards")
+        query_layanan = f"""
+        SELECT sk.nama
+        FROM subkategori_jasa sk
+        JOIN tr_pemesanan_jasa tpj ON sk.id_subkategori_jasa = tpj.idkategorijasa
+        WHERE tpj.id_tr_pemesanan_jasa = '{idtrpemesanan}';
+        """
+        layanan = query(query_layanan)
 
-    return render(request, "testimoni_form.html")
+        query_kategori = f"""
+        SELECT sk.kategorijasaid
+        FROM subkategori_jasa sk
+        JOIN tr_pemesanan_jasa tpj ON sk.id_subkategori_jasa = tpj.idkategorijasa
+        WHERE tpj.id_tr_pemesanan_jasa = '{idtrpemesanan}';
+        """
+        kategori = query(query_kategori)
+        
+        # Extract the actual values from the query results
+        if kategori and layanan:
+            # Assuming each query result contains a single row with one column
+            kategori_value = kategori[0]['kategorijasaid']  # Extract UUID value
+            layanan_value = layanan[0]['nama']  # Extract name of the service
+
+            # Construct the URL dynamically
+            url = reverse('hijau:subcategory_detail_user', args=[kategori_value, layanan_value])
+
+            # Redirect to the dynamically constructed URL
+            return redirect(url)
+    
+    return render(request, "testimoni_form.html", {'id_pemesanan': id_pemesanan})
 
 
 # Placeholder for testimonies
