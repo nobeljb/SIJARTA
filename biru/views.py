@@ -119,8 +119,9 @@ def pembelian_voucher(request):
         idpelanggan = pelanggan['id_user']
         balance = float(pelanggan['saldomypay'])
         
-        # Get voucher code from POST data
+        # Get voucher code and payment method from POST data
         voucher_code = request.POST.get('voucher_code')
+        payment_method = request.POST.get('payment_method')
         
         # Fetch voucher details
         query_voucher = f"""
@@ -135,46 +136,82 @@ def pembelian_voucher(request):
         price = float(voucher_data[0]["price"])
         duration = int(voucher_data[0]["duration"])
         quota = voucher_data[0]["quota"]
-        
-        # Check balance
-        if balance < price:
-            return JsonResponse({'status': 'failure', 'message': 'Saldo tidak mencukupi.'})
-        
-        # Deduct balance and update
-        new_balance = balance - price
-        update_balance_query = f"""
-        UPDATE pengguna
-        SET saldomypay = {new_balance}
-        WHERE id_user = '{idpelanggan}';
+
+        query_payment = f"""
+        SELECT mb.id_metode_bayar
+        FROM metode_bayar mb
+        WHERE mb.nama = '{payment_method}';
         """
-        query(update_balance_query)
+        payment_uuid_raw = query(query_payment)
         
-        # Update session balance
-        pelanggan['saldomypay'] = new_balance
-        request.session['penggunalogin'] = pelanggan
-        request.session.modified = True
-        
-        # Insert voucher purchase record
-        id_tr_pembelian_voucher = str(uuid.uuid4())
-        today = datetime.today().date()
-        end_date = today + timedelta(days=duration)
-        insert_purchase_query = f"""
-        INSERT INTO tr_pembelian_voucher (
-            id_tr_pembelian_voucher, tglawal, tglakhir, telahdigunakan,
-            idpelanggan, idvoucher, idmetodebayar
-        ) VALUES (
-            '{id_tr_pembelian_voucher}', '{today}', '{end_date}', 0,
-            '{idpelanggan}', '{voucher_code}', NULL
-        );
-        """
-        query(insert_purchase_query)
-        
-        return JsonResponse({
-            'status': 'success',
-            'message': f'Berhasil membeli voucher {voucher_code}',
-            'new_balance': new_balance,
-            'end_date': str(end_date),
-            'quota': quota  # Ensure quota is returned if needed
-        })
+        payment_uuid = payment_uuid_raw[0]["id_metode_bayar"]
+        print(payment_uuid)
+
+        # Process based on payment method
+        if payment_method == 'MyPay':
+            # Check balance
+            if balance < price:
+                return JsonResponse({'status': 'failure', 'message': 'Saldo tidak mencukupi.'})
+            
+            # Deduct balance and update
+            new_balance = balance - price
+            update_balance_query = f"""
+            UPDATE pengguna
+            SET saldomypay = {new_balance}
+            WHERE id_user = '{idpelanggan}';
+            """
+            query(update_balance_query)
+            
+            # Update session balance
+            pelanggan['saldomypay'] = new_balance
+            request.session['penggunalogin'] = pelanggan
+            request.session.modified = True
+            
+            # Insert voucher purchase record with MyPay UUID
+            id_tr_pembelian_voucher = str(uuid.uuid4())
+            today = datetime.today().date()
+            end_date = today + timedelta(days=duration)
+            insert_purchase_query = f"""
+            INSERT INTO tr_pembelian_voucher (
+                id_tr_pembelian_voucher, tglawal, tglakhir, telahdigunakan,
+                idpelanggan, idvoucher, idmetodebayar
+            ) VALUES (
+                '{id_tr_pembelian_voucher}', '{today}', '{end_date}', 0,
+                '{idpelanggan}', '{voucher_code}', '{payment_uuid}' 
+            );
+            """
+            query(insert_purchase_query)
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Berhasil membeli voucher {voucher_code} menggunakan MyPay.',
+                'new_balance': new_balance,
+                'end_date': str(end_date),
+                'quota': quota
+            })
+        else:
+            # For other payment methods, assume purchase is successful
+            
+            # Insert voucher purchase record with the payment method's UUID
+            id_tr_pembelian_voucher = str(uuid.uuid4())
+            today = datetime.today().date()
+            end_date = today + timedelta(days=duration)
+            insert_purchase_query = f"""
+            INSERT INTO tr_pembelian_voucher (
+                id_tr_pembelian_voucher, tglawal, tglakhir, telahdigunakan,
+                idpelanggan, idvoucher, idmetodebayar
+            ) VALUES (
+                '{id_tr_pembelian_voucher}', '{today}', '{end_date}', 0,
+                '{idpelanggan}', '{voucher_code}', '{payment_uuid}'
+            );
+            """
+            query(insert_purchase_query)
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Berhasil membeli voucher {voucher_code} menggunakan {payment_method}.',
+                'end_date': str(end_date),
+                'quota': quota
+            })
     except Exception as e:
         return JsonResponse({'status': 'failure', 'message': str(e)})
