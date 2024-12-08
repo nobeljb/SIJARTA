@@ -1,60 +1,122 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-    {% if user_role == 'Pekerja' %}
-        {% include 'navbar_pekerja.html' %}
-    {% else %}
-        {% include 'navbar_pengguna.html' %}
-    {% endif %}
+    {% include 'navbar_pekerja.html' %}
 {% endblock navbar %}
 
 {% block content %}
 <div class="container mx-auto p-6 bg-white rounded-lg shadow-lg mt-8 max-w-xl">
-    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">{{ subcategory.name }}</h1>
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">{{ subcategory.nama }}</h1>
     <p class="text-lg text-gray-600 mb-6"><strong>Kategori:</strong> {{ category_name }}</p>
-    <p class="text-md text-gray-700 mb-6">{{ subcategory.description }}</p>
+    <p class="text-md text-gray-700 mb-6">{{ subcategory.deskripsi }}</p>
 
     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Pilihan Sesi Layanan</h2>
     <ul class="list-disc space-y-4 text-gray-700">
         {% for session in sessions %}
-            <li class="flex justify-between">
-                <span>{{ session.name }}</span>
-                <span class="font-semibold text-gray-900">Rp {{ session.price }}</span>
+            <li class="flex">
+                <span class="font-semibold text-gray-900">{{ session.sesi }}. Rp {{ session.harga }}</span>
             </li>
         {% endfor %}
     </ul>
 
-    <div class="my-8">
-        {% if not is_worker_in_subcategory %}
-            <button onclick="alert('Anda telah bergabung dengan subkategori ini')" class="w-full sm:w-auto px-6 py-3 bg-[#2F4F4F] text-white font-semibold rounded-lg hover:bg-[#3b6363] transition duration-200">
-                Gabung ke Subkategori
-            </button>
-        {% else %}
-            <p class="text-green-600 font-semibold">Anda sudah tergabung dengan subkategori ini.</p>
-        {% endif %}
-    </div>
-
     <h2 class="text-2xl font-semibold text-gray-800 mb-6 mt-8">Daftar Pekerja</h2>
-    <ul class="space-y-4 text-gray-700">
+    <ul id="worker-list" class="space-y-4 text-gray-700">
         {% for worker in workers %}
             <li>
-                <a href="{% url 'hijau:worker_detail' worker.id %}" class="text-blue-600 hover:text-blue-800 font-medium">
-                    {{ worker.name }}
+                <a href="{% url 'hijau:worker_detail' worker.nama %}" class="text-[#2F4F4F] hover:text-green-800 font-medium">
+                    {{ worker.nama }}
                 </a>
             </li>
         {% endfor %}
+        {% if not joined %}
+            <button 
+                id="join-button"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
+                onclick="joinSubcategory('{{ subcategory.id_subkategori_jasa }}', '{{ penggunalogin.id_user }}')">
+                Gabung ke Subkategori
+            </button>
+        {% endif %}
     </ul>
+
 
     <h2 class="text-2xl font-semibold text-gray-800 mb-6 mt-8">Testimoni</h2>
     <ul class="space-y-4 text-gray-700">
-        {% for testimonial in testimonials %}
-            <li>
-                <strong class="font-semibold">{{ testimonial.user_name }}</strong> 
-                <span class="text-gray-500">({{ testimonial.date }})</span>: 
-                <span class="italic">"{{ testimonial.text }}"</span><br>
-                <span class="text-gray-600">Pekerja: {{ testimonial.worker_name }} | Rating: {{ testimonial.rating }}/5</span>
-            </li>
-        {% endfor %}
+        {% if testimonials %}
+            {% for testimonial in testimonials %}
+                <li class="bg-[#F3EBE0] bg-opacity-50 rounded-lg p-4 border border-[#2C5F59] shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <strong class="font-semibold text-[#283D3B]">{{ testimonial.namapengguna }}</strong>
+                            <span class="text-[#2C5F59] text-sm">({{ testimonial.tanggal }})</span>
+                        </div>
+                        <div class="text-[#00DFC9]">
+                            {{ testimonial.rating }} ★
+                        </div>
+                    </div>
+                    <p class="italic text-[#283D3B] mb-2">"{{ testimonial.teks }}"</p>
+                    <span class="text-[#2C5F59] text-sm">Pekerja: {{ testimonial.namapekerja }}</span>
+                </li>
+            {% endfor %}
+        {% else %}
+            <p>Belum ada testimoni</p>
+        {% endif %}
     </ul>
 </div>
+
+<script>
+    function joinSubcategory(subcategoryId, pekerjaId) {
+        const url = `/hijau/join-subcategory/${subcategoryId}/${pekerjaId}/`;
+
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Menampilkan pesan sukses dengan popup tema web
+                showPopup(data.message);
+
+                // Menambahkan nama pengguna ke daftar pekerja
+                const workerList = document.getElementById('worker-list');
+                const newWorker = document.createElement('li');
+                const workerLink = document.createElement('a');
+                workerLink.href = `/hijau/worker/${encodeURIComponent(data.pekerja_nama)}/`;
+                workerLink.textContent = data.pekerja_nama;
+                workerLink.className = "text-[#2F4F4F] hover:text-green-800 font-medium";
+                newWorker.appendChild(workerLink);
+                workerList.appendChild(newWorker);
+
+                // Menyembunyikan tombol Gabung
+                const joinButton = document.getElementById('join-button');
+                if (joinButton) {
+                    joinButton.style.display = 'none';
+                }
+            } else {
+                // Menampilkan pesan error dengan popup tema web
+                showPopup(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showPopup('Terjadi kesalahan. Coba lagi nanti.', 'error');
+        });
+    }
+
+    function showPopup(message, type = 'success') {
+        const popupContainer = document.createElement('div');
+        popupContainer.className = `fixed bottom-0 left-0 right-0 mt-8 px-4 py-2 bg-${type === 'success' ? 'green' : 'red'}-500 text-white text-center rounded-lg shadow-lg z-50`;
+        popupContainer.textContent = message;
+
+        // Tambahkan popup ke body
+        document.body.appendChild(popupContainer);
+
+        // Menghilangkan popup setelah beberapa detik
+        setTimeout(() => {
+            popupContainer.remove();
+        }, 3000);
+    }
+</script>
 {% endblock %}
