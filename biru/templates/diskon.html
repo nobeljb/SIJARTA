@@ -43,27 +43,89 @@
                             Minimum Transaksi: Rp {{ voucher.min_transaction }} | Berlaku {{ voucher.remaining_days }} hari lagi
                         </p>
                         <p class="text-sm text-[#283D3B]">
-                            Kuota: {{ voucher.quota }} | Harga: Rp {{ voucher.price }}
+                            Kuota Penggunaan: {{ voucher.quota }}x | Harga: Rp {{ voucher.price }}
                         </p>
                     </div>
-                    <form method="POST" action="{% url 'biru:pembelian_voucher' %}" class="inline-block">
-                        {% csrf_token %}
-                        <input type="hidden" name="voucher_code" value="{{ voucher.code }}">
-                        <input type="hidden" name="balance" value="{{ user_balance }}">
-                        <input type="hidden" name="price" value="{{ voucher.price }}">
-                        <input type="hidden" name="idpelanggan" value="{{ user_id }}">
-                        <input type="hidden" name="idmetodebayar" value="payment_method_id"> <!-- Replace with actual ID -->
-                        <button
-                            type="submit"
-                            class="px-4 py-2 bg-[#00DFC9] text-[#283D3B] font-medium rounded-lg hover:bg-[#2C5F59] hover:text-white transition duration-200">
-                            Beli Voucher
-                        </button>
-                    </form>
+                    <!-- Modify the button to include more data attributes -->
+                    <button
+                    type="button"
+                    data-voucher-code="{{ voucher.code }}"
+                    data-end-date="{{ voucher.end_date }}"
+                    data-quota="{{ voucher.quota }}"
+                    data-balance="{{ penggunalogin.saldomypay }}"
+                    data-price="{{ voucher.price }}"
+                    class="px-4 py-2 bg-[#00DFC9] text-[#283D3B] font-medium rounded-lg hover:bg-[#2C5F59] hover:text-white transition duration-200"
+                    onclick="handleVoucherPurchase(this)">
+                    Beli Voucher
+                    </button>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
+
+    <script>
+        function handleVoucherPurchase(button) {
+        const voucherCode = button.dataset.voucherCode;
+
+        const popup = document.getElementById('popup');
+        const title = document.getElementById('popup-title');
+        const message = document.getElementById('popup-message');
+
+        // Prepare data for server-side processing
+        fetch("{% url 'biru:pembelian_voucher' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `voucher_code=${voucherCode}`
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                // Update modal with success information
+                title.textContent = 'SUKSES';
+                message.innerHTML = `
+                    <p class="text-center">
+                        Selamat! Anda berhasil membeli voucher dengan kode 
+                        <span class="font-semibold text-[#2C5F59]">${voucherCode}</span>.
+                        <br><br>
+                        Voucher ini akan berlaku hingga tanggal 
+                        <span class="font-semibold text-[#2C5F59]">${data.end_date}</span>
+                        dengan kuota penggunaan sebanyak 
+                        <span class="font-semibold text-[#2C5F59]">${data.quota || 'Tidak diketahui'}</span> kali.
+                    </p>
+                `;
+            } else {
+                // Update modal with failure message
+                title.textContent = 'GAGAL';
+                message.innerHTML = `
+                    <p class="text-center text-red-600">
+                        ${data.message || 'Gagal membeli voucher.'}
+                    </p>
+                `;
+            }
+            popup.classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            title.textContent = 'GAGAL';
+            message.innerHTML = `
+                <p class="text-center text-red-600">
+                    Terjadi kesalahan saat membeli voucher.
+                </p>
+            `;
+            popup.classList.remove('hidden');
+        });
+    }
+    </script>
+
 
     <!-- Promo Section -->
     <div>

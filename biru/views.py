@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import Http404
+from django.http import Http404,  JsonResponse
 from utils.query import query
 from datetime import datetime, timedelta
 import uuid
@@ -75,82 +75,71 @@ def diskon(request):
 
 
 def pembelian_voucher(request):
-    if request.method == "POST":
-        voucher_code = request.POST.get("voucher_code")
-        idpelanggan = request.POST.get("idpelanggan")  # UUID of the customer
-        idmetodebayar = request.POST.get("idmetodebayar")  # UUID of the payment method
+    try:
+        # Get logged-in user from session
+        pelanggan = request.session.get('penggunalogin')
+        if not pelanggan:
+            return JsonResponse({'status': 'failure', 'message': 'Pengguna tidak login.'})
+        
+        idpelanggan = pelanggan['id_user']
+        balance = float(pelanggan['saldomypay'])
+        
+        # Get voucher code from POST data
+        voucher_code = request.POST.get('voucher_code')
         
         # Fetch voucher details
         query_voucher = f"""
-        SELECT harga AS price, jmlhariberlaku AS duration 
-        FROM voucher 
+        SELECT harga AS price, jmlhariberlaku AS duration, kuotapenggunaan AS quota
+        FROM voucher
         WHERE kode_voucher = '{voucher_code}';
         """
         voucher_data = query(query_voucher)
         if not voucher_data:
-            return render(request, "pembelian_voucher.html", {
-                "message": "Voucher tidak ditemukan.",
-                "status": "failure"
-            })
+            return JsonResponse({'status': 'failure', 'message': 'Voucher tidak ditemukan.'})
         
         price = float(voucher_data[0]["price"])
         duration = int(voucher_data[0]["duration"])
+        quota = voucher_data[0]["quota"]
         
-        # Fetch user balance
-        query_user = f"""
-        SELECT saldomypay 
-        FROM pengguna 
+        # Check balance
+        if balance < price:
+            return JsonResponse({'status': 'failure', 'message': 'Saldo tidak mencukupi.'})
+        
+        # Deduct balance and update
+        new_balance = balance - price
+        update_balance_query = f"""
+        UPDATE pengguna
+        SET saldomypay = {new_balance}
         WHERE id_user = '{idpelanggan}';
         """
-        user_data = query(query_user)
-        if not user_data:
-            return render(request, "pembelian_voucher.html", {
-                "message": "Pengguna tidak ditemukan.",
-                "status": "failure"
-            })
-
-        balance = float(user_data[0].get("saldomypay"))
-
-        # Check if balance is sufficient
-        if balance >= price:
-            # Deduct balance and update user's saldomypay
-            new_balance = balance - price
-            update_balance_query = f"""
-            UPDATE pengguna 
-            SET saldomypay = {new_balance}
-            WHERE id_user = '{idpelanggan}';
-            """
-            query(update_balance_query)
-
-            # Calculate voucher validity dates
-            today = datetime.today().date()
-            end_date = today + timedelta(days=duration)
-
-            # Insert purchase record into tr_pembelian_voucher
-            id_tr_pembelian_voucher = str(uuid.uuid4())
-            insert_purchase_query = f"""
-            INSERT INTO tr_pembelian_voucher (
-                id_tr_pembelian_voucher, tglawal, tglakhir, telahdigunakan, 
-                idpelanggan, idvoucher, idmetodebayar
-            ) VALUES (
-                '{id_tr_pembelian_voucher}', '{today}', '{end_date}', 0, 
-                '{idpelanggan}', '{voucher_code}', '{idmetodebayar}'
-            );
-            """
-            query(insert_purchase_query)
-
-            message = f"""
-                Selamat! Anda berhasil membeli voucher dengan kode {voucher_code}.
-                Voucher ini berlaku hingga tanggal {end_date}.
-            """
-            status = "success"
-        else:
-            message = "Maaf, saldo Anda tidak cukup untuk membeli voucher ini."
-            status = "failure"
-
-        return render(request, "pembelian_voucher.html", {
-            "message": message,
-            "status": status
+        query(update_balance_query)
+        
+        # Update session balance
+        pelanggan['saldomypay'] = new_balance
+        request.session['penggunalogin'] = pelanggan
+        request.session.modified = True
+        
+        # Insert voucher purchase record
+        id_tr_pembelian_voucher = str(uuid.uuid4())
+        today = datetime.today().date()
+        end_date = today + timedelta(days=duration)
+        insert_purchase_query = f"""
+        INSERT INTO tr_pembelian_voucher (
+            id_tr_pembelian_voucher, tglawal, tglakhir, telahdigunakan,
+            idpelanggan, idvoucher, idmetodebayar
+        ) VALUES (
+            '{id_tr_pembelian_voucher}', '{today}', '{end_date}', 0,
+            '{idpelanggan}', '{voucher_code}', NULL
+        );
+        """
+        query(insert_purchase_query)
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Berhasil membeli voucher {voucher_code}',
+            'new_balance': new_balance,
+            'end_date': str(end_date),
+            'quota': quota  # Ensure quota is returned if needed
         })
-
-    raise Http404("Invalid request method")
+    except Exception as e:
+        return JsonResponse({'status': 'failure', 'message': str(e)})
