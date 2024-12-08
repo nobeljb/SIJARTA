@@ -37,20 +37,28 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <h3 class="text-lg font-medium text-[#283D3B]">
-                            {{ voucher.code }} | {{ voucher.discount }}
+                            {{ voucher.code }} | {{ voucher.discount }}%
                         </h3>
                         <p class="text-sm text-[#283D3B]">
-                            Min Transaction: {{ voucher.min_transaction }} | Remaining: {{ voucher.remaining_days }} days
+                            Minimum Transaksi: Rp {{ voucher.min_transaction }} | Berlaku {{ voucher.remaining_days }} hari lagi
                         </p>
                         <p class="text-sm text-[#283D3B]">
-                            Quota: {{ voucher.quota }} | Price: Rp {{ voucher.price }}
+                            Kuota: {{ voucher.quota }} | Harga: Rp {{ voucher.price }}
                         </p>
                     </div>
-                    <button
-                        onclick="handleVoucherPurchase('{{ voucher.code }}', '{{ voucher.end_date }}', '{{ voucher.quota }}', '{{ voucher.price }}')"
-                        class="px-4 py-2 bg-[#00DFC9] text-[#283D3B] font-medium rounded-lg hover:bg-[#2C5F59] hover:text-white transition duration-200">
-                        Buy Voucher
-                    </button>
+                    <form method="POST" action="{% url 'biru:pembelian_voucher' %}" class="inline-block">
+                        {% csrf_token %}
+                        <input type="hidden" name="voucher_code" value="{{ voucher.code }}">
+                        <input type="hidden" name="balance" value="{{ user_balance }}">
+                        <input type="hidden" name="price" value="{{ voucher.price }}">
+                        <input type="hidden" name="idpelanggan" value="{{ user_id }}">
+                        <input type="hidden" name="idmetodebayar" value="payment_method_id"> <!-- Replace with actual ID -->
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-[#00DFC9] text-[#283D3B] font-medium rounded-lg hover:bg-[#2C5F59] hover:text-white transition duration-200">
+                            Beli Voucher
+                        </button>
+                    </form>
                 </div>
             </div>
             {% endfor %}
@@ -65,7 +73,7 @@
             <div class="flex justify-between items-center bg-[#F3EBE0] bg-opacity-50 border border-[#2C5F59] rounded-lg p-4 shadow-sm">
                 <div>
                     <h3 class="text-lg font-medium text-[#283D3B]">{{ promo.code }}</h3>
-                    <p class="text-sm text-[#283D3B]">Ends: {{ promo.end_date }}</p>
+                    <p class="text-sm text-[#283D3B]">Berlaku hingga: {{ promo.end_date }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -74,41 +82,6 @@
 </div>
 
 <script>
-    // Function to handle voucher purchase
-    function handleVoucherPurchase(voucherCode, endDate, quota, price) {
-        console.log("Voucher purchase triggered:", voucherCode, endDate, quota, price);
-        const userBalance = 1000000; // Example balance
-        
-        const popup = document.getElementById('popup');
-        const title = document.getElementById('popup-title');
-        const message = document.getElementById('popup-message');
-
-        if (userBalance >= price) {
-            title.textContent = 'SUKSES';
-            message.innerHTML = `
-                <p class="text-center">
-                    Selamat! Anda berhasil membeli voucher dengan kode 
-                    <span class="font-semibold text-[#2C5F59]">${voucherCode}</span>.
-                    <br><br>
-                    Voucher ini akan berlaku hingga tanggal 
-                    <span class="font-semibold text-[#2C5F59]">${endDate}</span>
-                    dengan kuota penggunaan sebanyak 
-                    <span class="font-semibold text-[#2C5F59]">${quota}</span> kali.
-                </p>
-            `;
-            
-        } else {
-            title.textContent = 'GAGAL';
-            message.innerHTML = `
-                <p class="text-center text-[#C44536]">
-                    Maaf, saldo Anda tidak cukup untuk membeli voucher ini.
-                </p>
-            `;
-        }
-        
-        popup.classList.remove('hidden');
-    }
-
     // Close popup event listener
     document.getElementById('close-popup').addEventListener('click', () => {
         document.getElementById('popup').classList.add('hidden');
