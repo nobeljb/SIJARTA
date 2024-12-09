@@ -31,34 +31,7 @@ def register_pekerja(request):
         rekening = request.POST.get('rekening')
         npwp = request.POST.get('npwp')
 
-        # Validasi No HP harus unik
-        query_str = f"""
-        select * from pengguna
-        where nohp = '{nohp}'
-        """
-        hasil = query(query_str)
-        if len(hasil) != 0:
-            return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar'})
         
-        # Validasi kombinasi Nama Bank dan Nomor Rekening harus unik
-        query_str =f"""
-        select *
-        from pekerja
-        where namabank = '{nama_bank}'
-        and nomorrekening = '{rekening}'
-        """
-        hasil = query(query_str)
-        if len(hasil) != 0:
-            return render(request, 'register_pekerja.html', {'message': 'Pengguna Sudah Terdaftar'})
-        
-        # Validasi NPWP harus unik
-        query_str = f"""
-        select * from pekerja
-        where npwp = '{npwp}'
-        """
-        hasil = query(query_str)
-        if len(hasil) != 0:
-            return render(request, 'register_pekerja.html', {'message': 'Pengguna Sudah Terdaftar'})
 
         # Jika semua validasi lolos, tambahkan data ke tabel pengguna
         query_str = f"""
@@ -67,14 +40,31 @@ def register_pekerja(request):
         """
         hasil = query(query_str)
 
-        # Insert ke tabel pekerja
-        query_str = f"""
-        insert into pekerja values(
-        '{id}', '{nama_bank}', '{rekening}', '{npwp}', '{foto}')
-        """
-        hasil = query(query_str)
+        if (hasil == 1):
+            # Validasi NPWP harus unik
+            query_str = f"""
+            select * from pekerja
+            where npwp = '{npwp}'
+            """
+            hasil = query(query_str)
+            if len(hasil) != 0:
+                return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar'})
 
-        return render(request, 'login.html', {'message': 'Pendaftaran berhasil.'})
+            # Insert ke tabel pekerja
+            query_str = f"""
+            insert into pekerja values(
+            '{id}', '{nama_bank}', '{rekening}', '{npwp}', '{foto}')
+            """
+            hasil = query(query_str)
+
+            if (hasil==1):
+                return render(request, 'login.html', {'message': 'Pendaftaran berhasil.'})
+            else:
+                return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar'})
+
+        else:
+            return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar'})
+
 
     # Dropdown Nama Bank
     bank_list = ['GoPay', 'OVO', 'Virtual Account BCA', 'Virtual Account BNI', 'Virtual Account Mandiri']
@@ -90,14 +80,7 @@ def register_pengguna(request):
         alamat = request.POST.get('alamat')
         nohp = request.POST.get('nohp')
 
-        # Validasi No HP harus unik
-        query_str = f"""
-        select * from pengguna
-        where nohp = '{nohp}'
-        """
-        hasil = query(query_str)
-        if len(hasil) != 0:
-            return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar'})
+        
 
         # Jika validasi lolos, tambahkan data ke pengguna
         query_str = f"""
@@ -111,7 +94,11 @@ def register_pengguna(request):
         """
         hasil = query(query_str)
 
-        return render(request, 'login.html', {'message': 'Pendaftaran berhasil.'})
+        if(hasil ==1 ):
+            return render(request, 'login.html', {'message': 'Pendaftaran berhasil.'})
+        else:
+            return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar.'})
+
 
     return render(request, 'register_pengguna.html')
 
