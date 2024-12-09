@@ -48,6 +48,11 @@ def register_pekerja(request):
             """
             hasil = query(query_str)
             if len(hasil) != 0:
+                query_str = f"""
+                delete from pengguna
+                where id_user='{id}'
+                """
+                query(query_str)
                 return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar'})
 
             # Insert ke tabel pekerja
@@ -60,6 +65,11 @@ def register_pekerja(request):
             if (hasil==1):
                 return render(request, 'login.html', {'message': 'Pendaftaran berhasil.'})
             else:
+                query_str = f"""
+                delete from pengguna
+                where id_user='{id}'
+                """
+                query(query_str)
                 return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar'})
 
         else:
