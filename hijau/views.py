@@ -295,7 +295,7 @@ def view_pemesanan(request):
         ON sj.id_subkategori_jasa = pj.idkategorijasa
     JOIN sijarta.status_pesanan sp 
         ON sp.id_status_pesanan = ps.idstatus
-    JOIN sijarta.pengguna pg
+    LEFT JOIN sijarta.pengguna pg
         ON pg.id_user = pj.idpekerja
     WHERE pj.idpelanggan = '{penggunalogin['id_user']}'
     ORDER BY 
