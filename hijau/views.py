@@ -208,7 +208,8 @@ def create_pemesanan(request, subcategory_id, session, price):
                     query_diskon = f"""
                     SELECT * FROM tr_pembelian_voucher
                     JOIN diskon ON kode_diskon = idvoucher
-                    WHERE idpelanggan = '{penggunalogin['id_user']}' AND idvoucher = '{diskon_code}' AND tglakhir >= current_date AND tglawal <= current_date
+                    JOIN voucher ON kode_voucher = idvoucher
+                    WHERE idpelanggan = '{penggunalogin['id_user']}' AND idvoucher = '{diskon_code}' AND tglakhir >= current_date AND tglawal <= current_date AND telahdigunakan < kuotapenggunaan
                     ORDER BY tglawal ASC, tglakhir ASC
                     """
                     diskon_data = query(query_diskon)
