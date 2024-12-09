@@ -88,16 +88,16 @@ def register_pengguna(request):
         '{id}', '{nama}', '{jeniskelamin}', '{nohp}', '{pwd}', '{tgllahir}', '{alamat}')
         """
         hasil = query(query_str)
-        query_str = f"""
-        insert into pelanggan values(
-        '{id}')
-        """
-        hasil = query(query_str)
-
         if(hasil ==1 ):
+            query_str = f"""
+            insert into pelanggan values(
+            '{id}')
+            """
+            hasil = query(query_str)
             return render(request, 'login.html', {'message': 'Pendaftaran berhasil.'})
         else:
             return render(request, 'login.html', {'message': 'Pengguna Sudah Terdaftar.'})
+
 
 
     return render(request, 'register_pengguna.html')
