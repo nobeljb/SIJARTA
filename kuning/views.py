@@ -175,11 +175,8 @@ def login(request):
 
             request.session['penggunalogin'] = penggunalogin
             context['penggunalogin'] = penggunalogin
-
-            if penggunalogin['role'] == 'pekerja':
-                return render(request, 'profile_pekerja.html', context)
             
-            return render(request, 'profile_pengguna.html', context)
+            return redirect('hijau:homepage')
         context['message'] = 'Pengguna belum terdaftar'
     return render(request, 'login.html', context)
 
