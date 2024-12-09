@@ -1,16 +1,14 @@
 {
-    "builds": [
-      {
-        "src": "SIJARTA/wsgi.py",
-        "use": "@vercel/python"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "SIJARTA/wsgi.py"
-      }
-    ]
-  }
-    
-    
+  "builds": [
+    {
+      "src": "SIJARTA/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "SIJARTA/wsgi.py"
+    }
+  ]
+}

@@ -284,7 +284,8 @@ def view_pemesanan(request):
     SELECT DISTINCT ON (pj.id_tr_pemesanan_jasa) 
         pj.id_tr_pemesanan_jasa AS id_pemesanan,
         sj.deskripsi AS session_name, 
-        pj.totalbiaya AS session_price, 
+        pj.totalbiaya AS session_price,
+        pg.nama AS worker_name,
         sp.status,
         ps.tglwaktu
     FROM sijarta.tr_pemesanan_jasa pj
@@ -294,6 +295,8 @@ def view_pemesanan(request):
         ON sj.id_subkategori_jasa = pj.idkategorijasa
     JOIN sijarta.status_pesanan sp 
         ON sp.id_status_pesanan = ps.idstatus
+    LEFT JOIN sijarta.pengguna pg
+        ON pg.id_user = pj.idpekerja
     WHERE pj.idpelanggan = '{penggunalogin['id_user']}'
     ORDER BY 
         pj.id_tr_pemesanan_jasa,  -- Mengelompokkan per pesanan

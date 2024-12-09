@@ -7,6 +7,7 @@ import uuid
 
 def testimoni_form(request, id_pemesanan):  # Add id_pemesanan as a parameter
     if request.method == "POST":
+        penggunalogin = request.session.get('penggunalogin')
         # Get the order ID from the URL parameter
         idtrpemesanan = id_pemesanan
         rating = int(request.POST.get("rating"))
@@ -18,14 +19,6 @@ def testimoni_form(request, id_pemesanan):  # Add id_pemesanan as a parameter
         VALUES ('{idtrpemesanan}', '{datetime.today().strftime('%Y-%m-%d')}', '{comment}', {rating});
         """
         query(query_str)
-        
-        # Update the order to mark testimony as submitted
-        # update_query = f"""
-        # UPDATE transaksi_pemesanan 
-        # SET testimoni = 'submitted' 
-        # WHERE id_pemesanan = '{id_pemesanan}';
-        # """
-        # query(update_query)
 
         query_layanan = f"""
         SELECT sk.nama
@@ -54,21 +47,7 @@ def testimoni_form(request, id_pemesanan):  # Add id_pemesanan as a parameter
 
             # Redirect to the dynamically constructed URL
             return redirect(url)
-    
-    return render(request, "testimoni_form.html", {'id_pemesanan': id_pemesanan})
-
-
-# Placeholder for testimonies
-testimonies = [
-    {
-        "user_name": "John Doe",
-        "date": "2024-11-15",
-        "testimony_text": "This is a great service!",
-        "worker_name": "Jane Smith",
-        "rating": 5,
-    },
-    # Add more testimonies if needed
-]
+    return render(request, "testimoni_form.html", {'id_pemesanan': id_pemesanan, 'penggunalogin': penggunalogin,})
 
 # View for Testimony Cards
 def testimoni_cards(request):
@@ -89,6 +68,7 @@ def testimoni_cards(request):
 
 # View for Discounts and Promotions
 def diskon(request):
+    penggunalogin = request.session.get('penggunalogin')
     # Retrieve voucher data
     query_str_vouchers = """
     SELECT kode_voucher AS code, jmlhariberlaku AS remaining_days, 
@@ -106,7 +86,7 @@ def diskon(request):
     """
     promos = query(query_str_promos)
 
-    return render(request, "diskon.html", {"vouchers": vouchers, "promos": promos})
+    return render(request, "diskon.html", {"vouchers": vouchers, "promos": promos, 'penggunalogin': penggunalogin,})
 
 
 def pembelian_voucher(request):
