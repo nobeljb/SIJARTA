@@ -3,17 +3,9 @@
     {
       "src": "SIJARTA/wsgi.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "SIJARTA/wsgi.py"
