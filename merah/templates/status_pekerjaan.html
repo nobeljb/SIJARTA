@@ -10,28 +10,30 @@
         <div class="bg-secondary w-full rounded-lg">
             <h1 class="text-xl font-semibold text-teks text-center px-2 py-2 mb-8">Status Pekerjaan</h1>
         </div>
-        <!-- Filter-->
-        <form method="GET">
-            <div class="grid grid-cols-2 gap-6 mb-8">
-
+        <!-- Filter -->
+        <form method="GET" class="mb-8">
+            <div class="grid grid-cols-2 gap-6 mb-4">
                 <div>
-                    <label for="namaFilter" class="block text-teks mb-2 font-medium">Filter Nama Jasa:</label>
-                    <input type="text" id="namaFilter" name="nama" placeholder="Masukkan nama jasa" value="{{ request.GET.nama }}" class="w-full border border-gray-300 rounded-md p-2 focus:border-primary focus:outline-none">
+                    <label for="nama" class="block text-teks mb-2 font-medium">Filter Nama Jasa:</label>
+                    <input type="text" id="nama" name="nama" 
+                           placeholder="Cari berdasarkan nama jasa..." 
+                           value="{{ request.GET.nama }}"
+                           class="w-full border border-gray-300 rounded-md p-2 focus:border-primary focus:outline-none">
                 </div>
-
                 <div>
-                    <label for="statusFilter" class="block text-teks mb-2 font-medium">Filter Status:</label>
-                    <select id="statusFilter" name="status" class="w-full border border-gray-300 rounded-md p-2 focus:border-primary focus:outline-none">
+                    <label for="status" class="block text-teks mb-2 font-medium">Filter Status:</label>
+                    <select id="status" name="status" 
+                            class="w-full border border-gray-300 rounded-md p-2 focus:border-primary focus:outline-none">
                         <option value="">Semua Status</option>
                         <option value="Menunggu Pekerja Berangkat" {% if request.GET.status == "Menunggu Pekerja Berangkat" %}selected{% endif %}>Menunggu Pekerja Berangkat</option>
-                        <option value="Pekerja Tiba Di Lokasi" {% if request.GET.status == "Pekerja Tiba Di Lokasi" %}selected{% endif %}>Pekerja Tiba Di Lokasi</option>
-                        <option value="Pelayanan Jasa Sedang Dilakukan" {% if request.GET.status == "Pelayanan Jasa Sedang Dilakukan" %}selected{% endif %}>Pelayanan Jasa Sedang Dilakukan</option>
-                        <option value="Pesanan Selesai" {% if request.GET.status == "Pesanan Selesai" %}selected{% endif %}>Pesanan Selesai</option>
-                        <option value="Pesanan Dibatalkan" {% if request.GET.status == "Pesanan Dibatalkan" %}selected{% endif %}>Pesanan Dibatalkan</option>
+                        <option value="Pekerja tiba di lokasi" {% if request.GET.status == "Pekerja tiba di lokasi" %}selected{% endif %}>Pekerja Tiba Di Lokasi</option>
+                        <option value="Pelayanan jasa sedang dilakukan" {% if request.GET.status == "Pelayanan jasa sedang dilakukan" %}selected{% endif %}>Pelayanan Jasa Sedang Dilakukan</option>
+                        <option value="Pesanan selesai" {% if request.GET.status == "Pesanan selesai" %}selected{% endif %}>Pesanan Selesai</option>
+                        <option value="Pesanan dibatalkan" {% if request.GET.status == "Pesanan dibatalkan" %}selected{% endif %}>Pesanan Dibatalkan</option>
                     </select>
                 </div>
             </div>
-            <div class="flex justify-end mb-4">
+            <div class="flex justify-end">
                 <button type="submit" class="btn btn-primary">Filter</button>
             </div>
         </form>
@@ -39,50 +41,45 @@
         <!-- Job List -->
         <div class="space-y-6">
             {% for job in jobs %}
-                <div class="card border border-secondary p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-lg font-semibold text-primary">{{ job.kategori }} - {{ job.subkategori }}</h3>
-                            <p class="text-teks">{{ job.alamat }}</p>
-                        </div>
-                        <span class="bg-accent text-white px-3 py-1 rounded-full text-sm">{{ job.status }}</span>
+            <div class="border border-secondary rounded-lg p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-primary">{{ job.kategori }} - {{ job.subkategori }}</h3>
+                        <p class="text-teks">{{ job.alamat }}</p>
                     </div>
-                    <div class="grid grid-cols-3 gap-4 mb-4">
-                        <div>
-                            <p class="text-teks">Tanggal:</p>
-                            <p class="font-medium">{{ job.tanggal }}</p>
-                        </div>
-                        <div>
-                            <p class="text-teks">Waktu:</p>
-                            <p class="font-medium">{{ job.waktu }}</p>
-                        </div>
-                        <div>
-                            <p class="text-teks">Harga:</p>
-                            <p class="font-medium">{{ job.harga }}</p>
-                        </div>
+                    <span class="bg-accent text-white px-3 py-1 rounded-full text-sm">{{ job.current_status }}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <p class="text-teks">Tanggal:</p>
+                        <p class="font-medium">{{ job.tglpemesanan|date:"d M Y" }}</p>
                     </div>
-                    <div class="flex justify-end space-x-4">
-                        {% if job.status == "Menunggu Pekerja Berangkat" %}
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="status" value="Pekerja Tiba Di Lokasi">
-                            <button type="submit" class="btn btn-secondary">Tiba Di Lokasi</button>
-                        </form>
-                        {% elif job.status == "Pekerja Tiba Di Lokasi" %}
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="status" value="Pelayanan Jasa Sedang Dilakukan">
-                            <button type="submit" class="btn btn-secondary">Melakukan Pelayanan Jasa</button>
-                        </form>
-                        {% elif job.status == "Pelayanan Jasa Sedang Dilakukan" %}
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="status" value="Pesanan Selesai">
-                            <button type="submit" class="btn btn-secondary">Selesai Melakukan Pelayanan</button>
-                        </form>
-                        {% endif %}
+                    <div>
+                        <p class="text-teks">Harga:</p>
+                        <p class="font-medium">Rp {{ job.totalbiaya|floatformat:0 }}</p>
                     </div>
                 </div>
+                
+                {% if job.current_status != "Pesanan selesai" and job.current_status != "Pesanan dibatalkan" %}
+                <div class="flex justify-end space-x-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="job_id" value="{{ job.id_tr_pemesanan_jasa }}">
+                        
+                        {% if job.current_status == "Menunggu Pekerja Berangkat" %}
+                            <input type="hidden" name="status" value="Pekerja tiba di lokasi">
+                            <button type="submit" class="btn btn-primary">Tiba Di Lokasi</button>
+                        {% elif job.current_status == "Pekerja tiba di lokasi" %}
+                            <input type="hidden" name="status" value="Pelayanan jasa sedang dilakukan">
+                            <button type="submit" class="btn btn-primary">Melakukan Pelayanan Jasa</button>
+                        {% elif job.current_status == "Pelayanan jasa sedang dilakukan" %}
+                            <input type="hidden" name="status" value="Pesanan selesai">
+                            <button type="submit" class="btn btn-primary">Selesai Melakukan Pelayanan</button>
+                        {% endif %}
+                    </form>
+                </div>
+                {% endif %}
+            </div>
             {% empty %}
             <div class="text-center text-teks p-8">
                 Tidak ada pekerjaan yang sedang diproses saat ini.

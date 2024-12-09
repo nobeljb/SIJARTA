@@ -3,7 +3,7 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-    {% if user_role == 'Pekerja' %}
+    {% if user_role == 'pekerja' %}
         {% include 'navbar_pekerja.html' %}
     {% else %}
         {% include 'navbar_pengguna.html' %}
@@ -28,7 +28,7 @@
                 <div class="text-black">Saldo:</div>
                 <div class="font-semibold text-primary">Rp {{ balance|default:"0" }}</div>
             </div>
-            <a href="{% url 'mypay:transaksi_mypay' %}" class="btn btn-primary">
+            <a href="{% url 'merah:transaksi_mypay' %}" class="btn btn-primary">
                 Lakukan Transaksi
             </a>
         </div>
@@ -48,8 +48,8 @@
                 {% for transaction in transactions %}
                 <div class="grid grid-cols-3 p-4 border-b hover:bg-gray-50">
                     <div class="text-primary">Rp {{ transaction.nominal }}</div>
-                    <div class="text-black">{{ transaction.tanggal }}</div>
-                    <div class="text-black">{{ transaction.kategori }}</div>
+                    <div class="text-black">{{ transaction.tgl }}</div>
+                    <div class="text-black">{{ transaction.nama}}</div>
                 </div>
                 {% empty %}
                 <div class="p-4 text-center text-black">
