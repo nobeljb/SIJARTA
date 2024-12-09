@@ -130,6 +130,9 @@ def join_subcategory(request, subcategory_id, pekerja_id):
 
 def worker_detail(request, worker_name):
     penggunalogin = request.session.get('penggunalogin')
+
+    worker_name = unquote(worker_name)
+
     query_str = f"""
     select * from pengguna
     join pekerja on id_user = id_pekerja
