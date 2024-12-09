@@ -7,8 +7,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from utils.query import query
 
-
-# views.py
+# views.py method
 def pekerja_jasa(request):
     """View for workers to see and accept available jobs"""
     penggunalogin = request.session.get('penggunalogin')
