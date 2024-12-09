@@ -37,88 +37,138 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <h3 class="text-lg font-medium text-[#283D3B]">
-                            {{ voucher.code }} | {{ voucher.discount }}
+                            {{ voucher.code }} | {{ voucher.discount }}%
                         </h3>
                         <p class="text-sm text-[#283D3B]">
-                            Min Transaction: {{ voucher.min_transaction }} | Remaining: {{ voucher.remaining_days }} days
+                            Minimum Transaksi: Rp {{ voucher.min_transaction }} | Berlaku {{ voucher.remaining_days }} hari lagi
                         </p>
                         <p class="text-sm text-[#283D3B]">
-                            Quota: {{ voucher.quota }} | Price: Rp {{ voucher.price }}
+                            Kuota Penggunaan: {{ voucher.quota }}x | Harga: Rp {{ voucher.price }}
                         </p>
                     </div>
+                    <!-- Modify the button to include more data attributes -->
+                    <!-- Inside the voucher loop -->
                     <button
-                        onclick="handleVoucherPurchase('{{ voucher.code }}', '{{ voucher.end_date }}', '{{ voucher.quota }}', '{{ voucher.price }}')"
-                        class="px-4 py-2 bg-[#00DFC9] text-[#283D3B] font-medium rounded-lg hover:bg-[#2C5F59] hover:text-white transition duration-200">
-                        Buy Voucher
+                    type="button"
+                    data-voucher-code="{{ voucher.code }}"
+                    data-price="{{ voucher.price }}"
+                    class="px-4 py-2 bg-[#00DFC9] text-[#283D3B] font-medium rounded-lg hover:bg-[#2C5F59] hover:text-white transition duration-200"
+                    onclick="showPaymentMethodPopup(this)">
+                    Beli Voucher
                     </button>
+
+                    <!-- Payment Method Popup -->
+                    <div id="payment-popup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 hover:scale-100">
+                            <div class="p-8">
+                                <h2 class="text-2xl font-bold text-[#2C5F59] mb-6 text-center">Pilih Metode Pembayaran</h2>
+                                <form id="payment-form" class="space-y-6">
+                                    <input type="hidden" id="selected-voucher-code" name="voucher_code">
+
+                                    <div>
+                                        <label for="payment_method" class="text-lg font-medium text-[#283D3B] block mb-2">Metode Pembayaran</label>
+                                        <select id="payment_method" name="payment_method" class="w-full px-4 py-2 border border-[#E7D7C1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00DFC9] focus:border-transparent" required>
+                                            <option value="MyPay">MyPay</option>
+                                            <option value="GoPay">GoPay</option>
+                                            <option value="OVO">OVO</option>
+                                            <option value="Virtual Account Mandiri">Virtual Account Mandiri</option>
+                                            <option value="Virtual Account BCA">Virtual Account BCA</option>
+                                            <option value="Virtual Account BNI">Virtual Account BNI</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <button type="submit" class="px-6 py-2 bg-[#2C5F59] text-white rounded-lg hover:bg-[#00DFC9] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#2C5F59]">
+                                            Pilih
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Promo Section -->
-    <div>
-        <h2 class="text-2xl font-semibold text-[#2C5F59] mb-6">Promo</h2>
-        <div class="space-y-4">
-            {% for promo in promos %}
-            <div class="flex justify-between items-center bg-[#F3EBE0] bg-opacity-50 border border-[#2C5F59] rounded-lg p-4 shadow-sm">
-                <div>
-                    <h3 class="text-lg font-medium text-[#283D3B]">{{ promo.code }}</h3>
-                    <p class="text-sm text-[#283D3B]">Ends: {{ promo.end_date }}</p>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<script>
-    // Function to handle voucher purchase
-    function handleVoucherPurchase(voucherCode, endDate, quota, price) {
-        console.log("Voucher purchase triggered:", voucherCode, endDate, quota, price);
-        const userBalance = 1000000; // Example balance
-        
-        const popup = document.getElementById('popup');
-        const title = document.getElementById('popup-title');
-        const message = document.getElementById('popup-message');
-
-        if (userBalance >= price) {
+    <script>
+        let selectedVoucherCode = '';
+    
+        function showPaymentMethodPopup(button) {
+            selectedVoucherCode = button.dataset.voucherCode;
+            document.getElementById('selected-voucher-code').value = selectedVoucherCode;
+            document.getElementById('payment-popup').classList.remove('hidden');
+        }
+    
+        document.getElementById('payment-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const paymentMethod = document.getElementById('payment_method').value;
+            const voucherCode = document.getElementById('selected-voucher-code').value;
+    
+            // Send the selected payment method and voucher code to the server
+            fetch("{% url 'biru:pembelian_voucher' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `voucher_code=${voucherCode}&payment_method=${paymentMethod}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showSuccessPopup(data.message, data.end_date, data.quota);
+                } else {
+                    showErrorPopup(data.message);
+                }
+                document.getElementById('payment-popup').classList.add('hidden');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorPopup('Terjadi kesalahan saat membeli voucher.');
+                document.getElementById('payment-popup').classList.add('hidden');
+            });
+        });
+    
+        function showSuccessPopup(message, endDate, quota) {
+            const popup = document.getElementById('popup');
+            const title = document.getElementById('popup-title');
+            const messageDiv = document.getElementById('popup-message');
             title.textContent = 'SUKSES';
-            message.innerHTML = `
+            messageDiv.innerHTML = `
                 <p class="text-center">
-                    Selamat! Anda berhasil membeli voucher dengan kode 
-                    <span class="font-semibold text-[#2C5F59]">${voucherCode}</span>.
-                    <br><br>
-                    Voucher ini akan berlaku hingga tanggal 
-                    <span class="font-semibold text-[#2C5F59]">${endDate}</span>
-                    dengan kuota penggunaan sebanyak 
-                    <span class="font-semibold text-[#2C5F59]">${quota}</span> kali.
+                    ${message}<br>
+                    Voucher berlaku hingga ${endDate} dengan kuota penggunaan ${quota} kali.
                 </p>
             `;
-            
-        } else {
+            popup.classList.remove('hidden');
+        }
+    
+        function showErrorPopup(message) {
+            const popup = document.getElementById('popup');
+            const title = document.getElementById('popup-title');
+            const messageDiv = document.getElementById('popup-message');
             title.textContent = 'GAGAL';
-            message.innerHTML = `
-                <p class="text-center text-[#C44536]">
-                    Maaf, saldo Anda tidak cukup untuk membeli voucher ini.
-                </p>
-            `;
+            messageDiv.innerHTML = `<p class="text-center text-red-600">${message}</p>`;
+            popup.classList.remove('hidden');
         }
-        
-        popup.classList.remove('hidden');
-    }
-
-    // Close popup event listener
-    document.getElementById('close-popup').addEventListener('click', () => {
-        document.getElementById('popup').classList.add('hidden');
-    });
-
-    // Close popup when clicking outside
-    document.getElementById('popup').addEventListener('click', (e) => {
-        if (e.target.id === 'popup') {
+    
+        // Close popups
+        document.getElementById('close-popup').addEventListener('click', () => {
             document.getElementById('popup').classList.add('hidden');
-        }
-    });
-</script>
+        });
+    
+        document.getElementById('popup').addEventListener('click', (e) => {
+            if (e.target.id === 'popup') {
+                document.getElementById('popup').classList.add('hidden');
+            }
+        });
+    
+        document.getElementById('payment-popup').addEventListener('click', (e) => {
+            if (e.target.id === 'payment-popup') {
+                document.getElementById('payment-popup').classList.add('hidden');
+            }
+        });
+    </script>
 {% endblock content %}

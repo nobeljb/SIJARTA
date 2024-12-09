@@ -31,33 +31,6 @@
     <form method="post" class="space-y-6">
         {% csrf_token %}
         
-        <!-- Kode Voucher -->
-        <div>
-            <label for="voucher_code" class="text-lg font-medium text-[#283D3B] block mb-2">
-                Kode Voucher
-            </label>
-            <input type="text" 
-                   id="voucher_code" 
-                   name="voucher_code" 
-                   class="w-full px-4 py-2 border border-[#E7D7C1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00DFC9] focus:border-transparent"
-                   required>
-        </div>
-
-        <!-- Harga -->
-        <div>
-            <label for="price" class="text-lg font-medium text-[#283D3B] block mb-2">
-                Harga
-            </label>
-            <div class="relative">
-                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
-                <input type="number" 
-                       id="price" 
-                       name="price" 
-                       class="w-full pl-10 pr-4 py-2 border border-[#E7D7C1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00DFC9] focus:border-transparent"
-                       required>
-            </div>
-        </div>
-
         <!-- Metode Pembayaran -->
         <div>
             <label for="payment_method" class="text-lg font-medium text-[#283D3B] block mb-2">
@@ -67,10 +40,12 @@
                     name="payment_method" 
                     class="w-full px-4 py-2 border border-[#E7D7C1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00DFC9] focus:border-transparent bg-white"
                     required>
-                <option value="">Pilih metode pembayaran</option>
-                <option value="transfer">Transfer Bank</option>
-                <option value="ewallet">E-Wallet</option>
-                <option value="credit">Kartu Kredit</option>
+                    <option value="mypay">MyPay</option>
+                    <option value="gopay">GoPay</option>
+                    <option value="ovo">OVO</option>
+                    <option value="vam">Virtual Account Mandiri</option>
+                    <option value="vabca">Virtual Account BCA</option>
+                    <option value="vabni">Virtual Account BNI</option>    
             </select>
         </div>
 
