@@ -3,7 +3,7 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-    {% if user_role == 'Pekerja' %}
+    {% if user_role == 'pekerja' %}
         {% include 'navbar_pekerja.html' %}
     {% else %}
         {% include 'navbar_pengguna.html' %}

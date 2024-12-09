@@ -7,144 +7,8 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from utils.query import query
 
-# Dummy data - in real implementation, this would come from SQL server
-DUMMY_USER = {
-    'phone_number': '081234567890',
-    'balance': Decimal('1500000.00'),
-    'role': 'Pengguna', # atur rolenya disini
-}
-
-DUMMY_TRANSACTIONS = [
-    {
-        'nominal': Decimal('250000.00'),
-        'tanggal': datetime.now() - timedelta(hours=2),
-        'kategori': 'Top Up',
-    },
-    {
-        'nominal': Decimal('75000.00'),
-        'tanggal': datetime.now() - timedelta(days=1),
-        'kategori': 'Payment',
-    },
-    {
-        'nominal': Decimal('100000.00'),
-        'tanggal': datetime.now() - timedelta(days=2),
-        'kategori': 'Transfer',
-    },
-    {
-        'nominal': Decimal('500000.00'),
-        'tanggal': datetime.now() - timedelta(days=3),
-        'kategori': 'Top Up',
-    },
-    {
-        'nominal': Decimal('110000.00'),
-        'tanggal': datetime.now() - timedelta(days=4),
-        'kategori': 'Payment',
-    },
-    {
-        'nominal': Decimal('120000.00'),
-        'tanggal': datetime.now() - timedelta(days=4),
-        'kategori': 'Payment',
-    },
-    {
-        'nominal': Decimal('60000.00'),
-        'tanggal': datetime.now() - timedelta(days=4),
-        'kategori': 'Payment',
-    },
-    {
-        'nominal': Decimal('1000.00'),
-        'tanggal': datetime.now() - timedelta(days=4),
-        'kategori': 'Payment',
-    },
-    {
-        'nominal': Decimal('12000.00'),
-        'tanggal': datetime.now() - timedelta(days=4),
-        'kategori': 'Payment',
-    },
-    {
-        'nominal': Decimal('1110000.00'),
-        'tanggal': datetime.now() - timedelta(days=4),
-        'kategori': 'Payment',
-    },
-    {
-        'nominal': Decimal('2222000.00'),
-        'tanggal': datetime.now() - timedelta(days=4),
-        'kategori': 'Payment',
-    },
-]
 
 # views.py
-
-DUMMY_JOB_CATEGORIES = [
-    'Home Cleaning',
-    'Home Cook',
-]
-
-DUMMY_SUBCATEGORIES = {
-    'Home Cleaning': ['Regular Cleaning', 'Deep Cleaning', 'Window Cleaning'],
-    'Personal Driver': ['City Drive', 'Long Distance', 'Airport Transfer'],
-    'Home Cook': ['Daily Cooking', 'Event Catering', 'Meal Prep'],
-    'Massage': ['Traditional', 'Reflexology', 'Sport Massage'],
-}
-
-DUMMY_JOB_ORDERS = [
-    {
-        'id': 1,
-        'kategori': 'Home Cleaning',
-        'subkategori': 'Regular Cleaning',
-        'status': 'Mencari Pekerja Terdekat',
-        'alamat': 'Jl. Kebon Jeruk No. 15',
-        'tanggal': '2024-03-20',
-        'waktu': '09:00',
-        'harga': 'Rp 150.000',
-    },
-    {
-        'id': 2,
-        'kategori': 'Home Cleaning',
-        'subkategori': 'Deep Cleaning',
-        'status': 'Mencari Pekerja Terdekat',
-        'alamat': 'Jl. Sudirman No. 100',
-        'tanggal': '2024-03-21',
-        'waktu': '13:00',
-        'harga': 'Rp 300.000',
-    },
-    {
-        'id': 3,
-        'kategori': 'Personal Driver',
-        'subkategori': 'Airport Transfer',
-        'status': 'Mencari Pekerja Terdekat',
-        'alamat': 'Jl. Gatot Subroto No. 50',
-        'tanggal': '2024-03-22',
-        'waktu': '05:00',
-        'harga': 'Rp 200.000',
-    },
-
-    {
-        'id': 4,
-        'kategori': 'Personal Cook',
-        'subkategori': 'Meal Prep',
-        'status': 'Mencari Pekerja Terdekat',
-        'alamat': 'Jl. Gatot Subroto No. 50',
-        'tanggal': '2024-03-22',
-        'waktu': '05:00',
-        'harga': 'Rp 200.000',
-    },
-
-
-    {
-        'id': 4,
-        'kategori': 'Home Cleaning',
-        'subkategori': 'Meal Prep',
-        'status': 'Menunggu Pekerja Berangkat',
-        'alamat': 'Jl. Gatot Subroto No. 50',
-        'tanggal': '2024-03-22',
-        'waktu': '05:00',
-        'harga': 'Rp 200.000',
-    },
-
-]
-
-# views.py
-
 def pekerja_jasa(request):
     """View for workers to see and accept available jobs"""
     penggunalogin = request.session.get('penggunalogin')
@@ -250,7 +114,8 @@ def pekerja_jasa(request):
         'subcategories': subcategories,
         'jobs': jobs,
         'selected_category': category_filter,
-        'selected_subcategory': subcategory_filter
+        'selected_subcategory': subcategory_filter,
+        'user_role': penggunalogin['role'],
     }
 
     return render(request, 'pekerja_jasa.html', context)
@@ -298,22 +163,16 @@ def transaksi_mypay(request):
     View trcansaction 
     """
 
-    print(f"Request method: {request.method}")
     penggunalogin = request.session.get('penggunalogin')
     if not penggunalogin:
         return redirect('merah:login')
 
     if request.method == 'POST':
-            print("aaa")
-            print("POST data:", request.POST)
             selected_state = request.POST.get('selectedState')
-            print(f"sitolol ini: {selected_state}")
             id_tr = uuid.uuid4()
 
             if selected_state == 'Payment':
-                print("masuk")
                 jasa = request.POST.get('jasa')
-                print(jasa)
                 nominal_payment = request.POST.get('nominal_payment')
 
                 # Validasi input jasa dan nominal_payment
@@ -395,7 +254,7 @@ def transaksi_mypay(request):
                     where id_user = '{user_id}'
                     """
                 update_saldo = query(query_str)
-                print(update_saldo)
+                
                 penggunalogin['saldomypay'] = update_saldo[0]['saldomypay']
 
                 # return redirect('merah:transaksi_mypay')
@@ -521,12 +380,11 @@ def transaksi_mypay(request):
     context = {
         'penggunalogin': penggunalogin,
         'user_role': penggunalogin['role'],
-        'list_jasa': jasa_dipesan
+        'list_jasa': jasa_dipesan,
+        'user_role': penggunalogin['role'],
     }
 
-    # print(context['user_role'])
     return render(request, 'transaksi_mypay.html', context)
-
 
 def status_pekerjaan(request):
     penggunalogin = request.session.get('penggunalogin')
@@ -538,7 +396,7 @@ def status_pekerjaan(request):
     status_filter = request.GET.get('status', '')
     nama_filter = request.GET.get('nama', '').lower()
 
-    # Modified query to only show accepted jobs
+    # Base query
     base_query = f"""
     SELECT DISTINCT ON (pj.id_tr_pemesanan_jasa)
         pj.id_tr_pemesanan_jasa,
@@ -573,16 +431,32 @@ def status_pekerjaan(request):
     )
     """
 
-    if nama_filter:
-        base_query += f" AND (LOWER(kj.namakategori) LIKE '%{nama_filter}%' OR LOWER(sj.nama) LIKE '%{nama_filter}%')"
-        base_query += """
-        ORDER BY pj.id_tr_pemesanan_jasa, ts.tglwaktu DESC;
-        """
+    base_query += """
+    ORDER BY 
+        pj.id_tr_pemesanan_jasa,  -- Mengelompokkan per pesanan
+        ts.tglwaktu DESC,         -- Ambil status terbaru berdasarkan waktu
+        CASE 
+            WHEN sp.status = 'Pesanan dibatalkan' THEN 1
+            WHEN sp.status = 'Pesanan selesai' THEN 2
+            WHEN sp.status = 'Pelayanan jasa sedang dilakukan' THEN 3
+            WHEN sp.status = 'Pekerja tiba di lokasi' THEN 4
+            WHEN sp.status = 'Menunggu Pekerja Berangkat' THEN 5
+            WHEN sp.status = 'Mencari Pekerja Terdekat' THEN 6
+            WHEN sp.status = 'Menunggu Pembayaran' THEN 7
+            ELSE 8 -- Default jika status tidak dikenal
+        END;
+    """
 
     jobs = query(base_query)
 
+    # Add status filter
     if status_filter:
         jobs = [job for job in jobs if job['current_status'] == status_filter]
+
+    # Add name filter
+    if nama_filter:
+        jobs = [job for job in jobs if job['kategori'].lower().find(nama_filter) != -1 or job['subkategori'].lower().find(nama_filter) != -1]
+        #base_query += f" AND (LOWER(kj.namakategori) LIKE '%{nama_filter}%' OR LOWER(sj.nama) LIKE '%{nama_filter}%')"
 
     # Handle status updates
     if request.method == 'POST':
@@ -597,8 +471,6 @@ def status_pekerjaan(request):
             }
             
             status_id = status_mapping.get(new_status)
-            print(f"Jb Id: {job_id}")
-            print(f"statustsututus: {status_id}")
             if status_id:
                 query_str = f"""
                 INSERT INTO TR_PEMESANAN_STATUS (idtrpemesanan, idstatus, tglwaktu)
@@ -606,11 +478,15 @@ def status_pekerjaan(request):
                 """
                 query(query_str)
                 return redirect('merah:status_pekerjaan')
+            
+        # jobs = query(base_query)
 
     context = {
         'penggunalogin': penggunalogin,
         'jobs': jobs,
-        'selected_status': status_filter
+        'status_filter': status_filter,
+        'nama_filter': nama_filter,
+        'user_role': penggunalogin['role'],
     }
 
     return render(request, 'status_pekerjaan.html', context)

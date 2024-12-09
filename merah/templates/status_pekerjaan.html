@@ -26,10 +26,10 @@
                             class="w-full border border-gray-300 rounded-md p-2 focus:border-primary focus:outline-none">
                         <option value="">Semua Status</option>
                         <option value="Menunggu Pekerja Berangkat" {% if request.GET.status == "Menunggu Pekerja Berangkat" %}selected{% endif %}>Menunggu Pekerja Berangkat</option>
-                        <option value="Pekerja Tiba Di Lokasi" {% if request.GET.status == "Pekerja Tiba Di Lokasi" %}selected{% endif %}>Pekerja Tiba Di Lokasi</option>
-                        <option value="Pelayanan Jasa Sedang Dilakukan" {% if request.GET.status == "Pelayanan Jasa Sedang Dilakukan" %}selected{% endif %}>Pelayanan Jasa Sedang Dilakukan</option>
-                        <option value="Pesanan Selesai" {% if request.GET.status == "Pesanan Selesai" %}selected{% endif %}>Pesanan Selesai</option>
-                        <option value="Pesanan Dibatalkan" {% if request.GET.status == "Pesanan Dibatalkan" %}selected{% endif %}>Pesanan Dibatalkan</option>
+                        <option value="Pekerja tiba di lokasi" {% if request.GET.status == "Pekerja tiba di lokasi" %}selected{% endif %}>Pekerja Tiba Di Lokasi</option>
+                        <option value="Pelayanan jasa sedang dilakukan" {% if request.GET.status == "Pelayanan jasa sedang dilakukan" %}selected{% endif %}>Pelayanan Jasa Sedang Dilakukan</option>
+                        <option value="Pesanan selesai" {% if request.GET.status == "Pesanan selesai" %}selected{% endif %}>Pesanan Selesai</option>
+                        <option value="Pesanan dibatalkan" {% if request.GET.status == "Pesanan dibatalkan" %}selected{% endif %}>Pesanan Dibatalkan</option>
                     </select>
                 </div>
             </div>
