@@ -43,6 +43,8 @@ media
 # IntelliJ
 out/
 
+staticfiles/
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 
