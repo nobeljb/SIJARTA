@@ -4,6 +4,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from datetime import date, datetime
 from django import forms
 from utils.query import query
+from urllib.parse import unquote
 
 def homepage(request):
 
@@ -33,6 +34,9 @@ def homepage(request):
 def subcategory_detail(request, category_id, subcategory_nama):
     penggunalogin = request.session.get('penggunalogin')
 
+    # Ubah %20 menjadi spasi
+    subcategory_nama = unquote(subcategory_nama)
+    
     #query kategori
     query_str = f"""
     select * from kategori_jasa
