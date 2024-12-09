@@ -49,7 +49,6 @@ def testimoni_form(request, id_pemesanan):  # Add id_pemesanan as a parameter
             return redirect(url)
     return render(request, "testimoni_form.html", {'id_pemesanan': id_pemesanan, 'penggunalogin': penggunalogin,})
 
-
 # View for Testimony Cards
 def testimoni_cards(request):
     # Retrieve testimonies from the database
