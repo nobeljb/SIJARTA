@@ -49,19 +49,6 @@ def testimoni_form(request, id_pemesanan):  # Add id_pemesanan as a parameter
             return redirect(url)
     return render(request, "testimoni_form.html", {'id_pemesanan': id_pemesanan, 'penggunalogin': penggunalogin,})
 
-
-# Placeholder for testimonies
-testimonies = [
-    {
-        "user_name": "John Doe",
-        "date": "2024-11-15",
-        "testimony_text": "This is a great service!",
-        "worker_name": "Jane Smith",
-        "rating": 5,
-    },
-    # Add more testimonies if needed
-]
-
 # View for Testimony Cards
 def testimoni_cards(request):
     # Retrieve testimonies from the database
