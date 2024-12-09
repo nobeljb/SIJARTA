@@ -1,23 +1,19 @@
 {% extends 'base.html' %}
+{% block navbar %}
+    {% if user_role == 'Pekerja' %}
+        {% include 'navbar_pekerja.html' %}
+    {% else %}
+        {% include 'navbar_pengguna.html' %}
+    {% endif %}
+{% endblock navbar %}
 {% block content %}
 <div class="container mx-auto px-4 py-8 max-w-xl">
     <div class="bg-white rounded-lg shadow-lg p-8">
         <h1 class="text-3xl font-bold text-[#283D3B] mb-8 text-center">Form Testimoni</h1>
         
-        <form action="/submit_testimony" method="POST" class="space-y-6">
+        <form action="{% url 'biru:testimoni_form' id_pemesanan %}" method="POST" class="space-y-6">
             {% csrf_token %}
-            
-            <!-- User Name -->
-            <div>
-                <label for="user_name" class="block text-[#283D3B] font-medium mb-2">
-                    Your Name
-                </label>
-                <input type="text" 
-                       id="user_name" 
-                       name="user_name" 
-                       required
-                       class="w-full px-4 py-2 rounded-lg border border-[#E7D7C1] focus:outline-none focus:ring-2 focus:ring-[#00DFC9] focus:border-transparent">
-            </div>
+            <input type="hidden" name="idtrpemesanan" value="{{ id_pemesanan }}">
 
             <!-- Rating -->
             <div>
@@ -57,7 +53,7 @@
             <div class="text-center">
                 <button type="submit" 
                         class="px-6 py-3 bg-[#2C5F59] text-white font-semibold rounded-lg hover:bg-[#00DFC9] transition-colors duration-200">
-                    Submit Testimony
+                    Submit Testimoni
                 </button>
             </div>
         </form>
